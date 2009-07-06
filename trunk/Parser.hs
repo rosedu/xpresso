@@ -37,21 +37,21 @@ TokenParser{ parens = m_parens
            , whiteSpace = m_whiteSpace } = makeTokenParser def
 
 {- expression parser function -}
-exprparser :: Parser Expr
-exprparser = buildExpressionParser table term <?> "expression"
+exprParser :: Parser Expr
+exprParser = buildExpressionParser table term <?> "expression"
 table = [ [Prefix (m_reservedOp "~" >> return (Uno Not))]
         , [Postfix (m_reservedOp "'" >> return (Uno Not))]
         , [Infix (m_reservedOp "*" >> return (Duo And)) AssocLeft]
         , [Infix (m_reservedOp "+" >> return (Duo Or)) AssocLeft]
         ]
-term = m_parens exprparser
+term = m_parens exprParser
        <|> liftM Var m_identifier
        <|> (m_reserved "1" >> return (Con True))
        <|> (m_reserved "0" >> return (Con False))
 
 {- string-to-expression function -}
 play :: String -> Maybe Expr 
-play inp = case parse exprparser "" inp of
+play inp = case parse exprParser "" inp of
 		Left err -> Nothing
 		Right expr -> Just expr
 
@@ -74,3 +74,17 @@ getVars (Duo _ a b) = union (getVars a) (getVars b)
 asf :: Maybe Expr -> Expr
 asf (Just a) = a
 
+{- builds the truth table for a given expression -}
+makeTable :: Expr -> [[Bool]] 
+makeTable expr = makeTableAux expr []
+
+{- auxiliary function for makeTable -}
+makeTableAux :: Expr -> [Bool] -> [[Bool]]
+makeTableAux expr current = if (length current) < n then
+    (makeTableAux expr (False:current)) ++ (makeTableAux expr (True:current))
+    else [current ++ [parseExpr expr pairMap]]
+    where 
+	list	= getVars expr
+	n	= size list 
+	vars  	= fmap fst (toList list)
+	pairMap	= fromList $ zip vars current
