@@ -19,6 +19,8 @@ data Unop = Not deriving Show
 {- tipul operator dual -}
 data Duop = And | Or deriving Show
 
+type TruthTable = [([Bool], Bool)]
+
 {- specificatia sintaxei -}
 def = emptyDef{ identStart = letter
               , identLetter = alphaNum
@@ -49,9 +51,15 @@ term = m_parens exprParser
        <|> (m_reserved "1" >> return (Con True))
        <|> (m_reserved "0" >> return (Con False))
 
+{- insert spaces before ~ and after ' operators -}
+insertSpaces :: String -> String
+insertSpaces [] = []
+insertSpaces (c:str) = if (elem c "'~") then c:' ':(insertSpaces str)
+			else c:insertSpaces str
+
 {- string-to-expression function -}
 play :: String -> Maybe Expr 
-play inp = case parse exprParser "" inp of
+play inp = case parse exprParser "" (insertSpaces inp) of
 		Left err -> Nothing
 		Right expr -> Just expr
 
@@ -70,21 +78,35 @@ getVars (Con a) = empty
 getVars (Uno _ a) = getVars a 
 getVars (Duo _ a b) = union (getVars a) (getVars b)
 
-{- no comment -}
-asf :: Maybe Expr -> Expr
-asf (Just a) = a
-
 {- builds the truth table for a given expression -}
-makeTable :: Expr -> [[Bool]] 
-makeTable expr = makeTableAux expr []
+makeTableFromExpr :: Expr -> TruthTable
+makeTableFromExpr expr = makeTableFromExprAux expr n vars []
+    where 
+	n	= size $ getVars expr
+	vars  	= fmap fst (toList (getVars expr))
 
 {- auxiliary function for makeTable -}
-makeTableAux :: Expr -> [Bool] -> [[Bool]]
-makeTableAux expr current = if (length current) < n then
-    (makeTableAux expr (False:current)) ++ (makeTableAux expr (True:current))
-    else [current ++ [parseExpr expr pairMap]]
+makeTableFromExprAux :: Expr -> Int -> [String] -> [Bool] -> TruthTable 
+makeTableFromExprAux expr n vars current = if (length current) < n then
+    (makeTableFromExprAux expr n vars (False:current)) ++ 
+    	(makeTableFromExprAux expr n vars (True:current))
+    else [(current, (parseExpr expr pairMap))]
     where 
-	list	= getVars expr
-	n	= size list 
-	vars  	= fmap fst (toList list)
 	pairMap	= fromList $ zip vars current
+
+fullTable :: Int -> [Bool] -> [[Bool]]
+fullTable n current = if (length current) < n then 
+	(fullTable n (False:current)) ++ (fullTable n (True:current))
+	else current:[]
+
+
+makeTableFromTable :: [[Bool]] -> TruthTable
+makeTableFromTable tt = makeTableFromTableAux(fullTable (length(head tt)) []) tt
+
+makeTableFromTableAux :: [[Bool]] -> [[Bool]] -> TruthTable
+makeTableFromTableAux [] _ = []
+makeTableFromTableAux (x:full) tt = if (elem x tt) then 
+				(x, True) : (makeTableFromTableAux full tt)
+			else 
+				(x, False): (makeTableFromTableAux full tt)
+
