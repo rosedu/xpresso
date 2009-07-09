@@ -85,7 +85,7 @@ makeTableFromExpr expr = makeTableFromExprAux expr n vars []
 	n	= size $ getVars expr
 	vars  	= fmap fst (toList (getVars expr))
 
-{- auxiliary function for makeTable -}
+{- auxiliary function for makeTableFromExpr -}
 makeTableFromExprAux :: Expr -> Int -> [String] -> [Bool] -> TruthTable 
 makeTableFromExprAux expr n vars current = if (length current) < n then
     (makeTableFromExprAux expr n vars (False:current)) ++ 
@@ -94,15 +94,17 @@ makeTableFromExprAux expr n vars current = if (length current) < n then
     where 
 	pairMap	= fromList $ zip vars current
 
+{- generates all possible truth-value combinations of a certain length -}
 fullTable :: Int -> [Bool] -> [[Bool]]
 fullTable n current = if (length current) < n then 
 	(fullTable n (False:current)) ++ (fullTable n (True:current))
 	else current:[]
 
-
+{- transforms f given by {x | f(x) = True} into a TruthTable for f -}
 makeTableFromTable :: [[Bool]] -> TruthTable
 makeTableFromTable tt = makeTableFromTableAux(fullTable (length(head tt)) []) tt
 
+{- auxiliary function for makeTableFromTable -}
 makeTableFromTableAux :: [[Bool]] -> [[Bool]] -> TruthTable
 makeTableFromTableAux [] _ = []
 makeTableFromTableAux (x:full) tt = if (elem x tt) then 
