@@ -3,11 +3,15 @@ module Quine where
 
 -- Dunno if we need this.
 import Data.List
+import Data.Maybe
 import Parser 
 
 {- QuineToken = True, False or Dash -}
 data QuineToken = Care Bool | Dash deriving (Eq, Show)
 type Implicant = [QuineToken]
+
+instance Ord QuineToken where
+	x <= y = x == y || (x == Care False && y == Care True) || (x == Dash)
 
 {- eliminates False rows from a TruthTable -}
 cutZeros :: TruthTable -> [Implicant]
@@ -65,3 +69,62 @@ getNextOrder ( (imp1,ord1) : (imp2, ord2) : rest )
 	        if (null (matches i)) then reduce imp1 imp2 (i:imp)
 	        else reduce imp1 imp2 (union imp (map (genImp i) (matches i)))
 	    matches i = filter (compatibleImp i) imp2
+
+{- returns the numbers of the minterms that an implicant stands for -}
+impNumbers :: Implicant -> [Int]
+impNumbers [] = [0]
+impNumbers imp = case (last imp) of
+		    Care True -> caseTrue
+		    Care False -> caseFalse
+		    Dash -> merge caseFalse caseTrue
+	where
+	    caseTrue = map addPlus (impNumbers (init imp))
+	    caseFalse = map (2*) (impNumbers (init imp))
+	    addPlus x = 1+2*x
+	    merge [] ly = ly 
+	    merge lx [] = lx 
+	    merge (x:lx) (y:ly) = if x<y then x:(merge lx (y:ly))
+	    				else y:(merge (x:lx) ly)
+
+{- from a given set of implicants defining a logical function, finds 
+	minimal groups that provide complete coverage of its minterms -}
+petrick :: [Implicant] -> [[Implicant]]
+petrick impList = multiply $ makeSums impList 
+
+{- creates the list that maps over the product of sums 
+	in step 3 of Petrick's method -} 
+makeSums :: [Implicant] -> [[Implicant]]
+makeSums impList = map selectImps (nub (concat (map impNumbers impList))) 
+    where
+        {- selects all the implicants corresponding to minterm x -}
+	selectImps x = filter (elem x . impNumbers) impList
+
+{- multiplies the product of sums into the sum of products and 
+	performs the X+XY = X reduction -}
+multiply :: [[Implicant]] -> [[Implicant]]
+multiply impList = reduce $ nub $ myfoldl folding [] impList
+    where
+        {- performs the X+XY = X reduction step -}
+	reduce list = filter (\x -> length (filter (includes x) list ) ==1) list
+
+	{- multiplies two sums of implicants into a sum of products -}
+	{- this function is folded over the product of sums in order to
+		obtain the sum of products in step 4 of Petrick's method -}
+	folding [] list = map ( :[]) list
+	folding list [] = [] 
+	folding lx (y:ly) = union (map (sort.union [y]) lx) (folding lx ly)
+
+
+	{- verifies if an implicant contains another -}
+	includes lx [] = True
+	includes lx (y:ly) = elem y lx && includes lx ly  
+
+	{- foldl function which also reduces the accumulator on every step -}
+	myfoldl f acc [] = acc
+	myfoldl f acc (x:lx) = myfoldl f (reduce (f acc x)) lx
+
+{- from an expression, finds groups of implicants with complete coverage -}
+test :: String -> [[Implicant]]
+test expr = petrick $ concat $ map fst $ getNextOrder $ getNextOrder 
+	$ getNextOrder $ getFirstOrder $ cutZeros 
+	$ makeTableFromExpr $ fromJust $ play expr 
