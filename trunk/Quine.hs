@@ -54,21 +54,43 @@ getFirstOrder = (folding []). (sortBy sorting) . (map mapping)
 	folding [] (y:ys) = folding [([(fst y)], (snd y))] ys
 	folding list [] = list
 
-{- test: *Quine> getNextOrder $ getNextOrder $ getFirstOrder $ cutZeros $ makeTableFromExpr $ Maybe.fromJust $ play "a+b'*c+c*a" -}
-
 {- computes all possible combinations of implicants from one size to the next -}
 getNextOrder :: [([Implicant],Int)] -> [([Implicant], Int)]
 getNextOrder (x:[]) = [x]
 getNextOrder ( (imp1,ord1) : (imp2, ord2) : rest )
-	| ord2 /= (ord1+1) = ((imp1,ord1) : (getNextOrder ((imp2, ord2):rest)))
-	| otherwise = (imp, ord1) : (getNextOrder ((imp2, ord2):rest))
-	where 
-	    imp = reduce imp1 imp2 []
-  	    reduce [] imp2 imp = imp
-	    reduce (i:imp1) imp2 imp = 
-	        if (null (matches i)) then reduce imp1 imp2 (i:imp)
-	        else reduce imp1 imp2 (union imp (map (genImp i) (matches i)))
-	    matches i = filter (compatibleImp i) imp2
+    | ord2 /= (ord1+1) = ((imp1,ord1) : (getNextOrder ((imp2, ord2):rest)))
+    | otherwise = (imp, ord1) : (getNextOrder ((imp2, ord2):rest))
+    where 
+        imp = sort (reduce imp1 imp2 [])
+	reduce [] imp2 imp = imp
+	reduce (i:imp1) imp2 imp = 
+            if (null (matches i)) then reduce imp1 imp2 (i:imp)
+            else reduce imp1 imp2 (union imp (map (genImp i) (matches i)))
+	matches i = filter (compatibleImp i) imp2
+
+{- given a list of implicants, it repeatedly applies the Quine-McCluskey
+	reduction until no more changes occur -}
+getPrimeImplicants :: [Implicant] -> [Implicant]
+getPrimeImplicants impList = concat $ map fst $ 
+			apply (reduce.getNextOrder) (getFirstOrder impList)
+    where
+    	apply f x = if (x == (f x)) then (f x) else apply f (f x)
+	reduce (imp:[]) = [imp]
+	reduce ((imp1,ord1):(imp2,ord2):rest)
+	    | ord2 /= (ord1 + 1) = (imp1,ord1):(reduce ((imp2,ord2):rest))
+	    | otherwise		 = (imp1,ord1):(reduce ((imp,ord2):rest))
+	    where
+	        {- imp = implicants from imp2 that aren't included in
+			any implicant from imp1 -}
+	    	imp = filter (\x -> length (filter (derived x) imp1) == 0) imp2
+
+		{- checks to see if implicant x includes implicant y -}
+		derived [] [] = True
+		derived (x:lx) (y:ly) 
+		    | x==y = derived lx ly
+		    | x/=Dash && y==Dash = lx == ly
+		    | otherwise = False
+		derived _ _ = False
 
 {- returns the numbers of the minterms that an implicant stands for -}
 impNumbers :: Implicant -> [Int]
@@ -89,15 +111,12 @@ impNumbers imp = case (last imp) of
 {- from a given set of implicants defining a logical function, finds 
 	minimal groups that provide complete coverage of its minterms -}
 petrick :: [Implicant] -> [[Implicant]]
-petrick impList = multiply $ makeSums impList 
-
-{- creates the list that maps over the product of sums 
-	in step 3 of Petrick's method -} 
-makeSums :: [Implicant] -> [[Implicant]]
-makeSums impList = map selectImps (nub (concat (map impNumbers impList))) 
+petrick impList = map ((++) essentialImps) (multiply (sums otherImps))
     where
-        {- selects all the implicants corresponding to minterm x -}
-	selectImps x = filter (elem x . impNumbers) impList
+    	sums imps = map (selectImps imps) (nub (concat (map impNumbers imps))) 
+	selectImps imps x = filter (elem x . impNumbers) imps
+	essentialImps = nub $ concat $ filter (\x -> length x==1) (sums impList)
+	otherImps = impList \\ essentialImps
 
 {- multiplies the product of sums into the sum of products and 
 	performs the X+XY = X reduction -}
@@ -114,7 +133,6 @@ multiply impList = reduce $ nub $ myfoldl folding [] impList
 	folding list [] = [] 
 	folding lx (y:ly) = union (map (sort.union [y]) lx) (folding lx ly)
 
-
 	{- verifies if an implicant contains another -}
 	includes lx [] = True
 	includes lx (y:ly) = elem y lx && includes lx ly  
@@ -125,6 +143,5 @@ multiply impList = reduce $ nub $ myfoldl folding [] impList
 
 {- from an expression, finds groups of implicants with complete coverage -}
 test :: String -> [[Implicant]]
-test expr = petrick $ concat $ map fst $ getNextOrder $ getNextOrder 
-	$ getNextOrder $ getFirstOrder $ cutZeros 
-	$ makeTableFromExpr $ fromJust $ play expr 
+test expr =  petrick $ getPrimeImplicants $ 
+	cutZeros $ makeTableFromExpr $ fromJust $ play expr 
