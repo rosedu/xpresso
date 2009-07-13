@@ -111,7 +111,9 @@ impNumbers imp = case (last imp) of
 {- from a given set of implicants defining a logical function, finds 
 	minimal groups that provide complete coverage of its minterms -}
 petrick :: [Implicant] -> [[Implicant]]
-petrick impList = map ((++) essentialImps) (multiply (sums otherImps))
+petrick impList = if (length essentialImps == length impList) 
+			then [essentialImps]
+    else map ((++) essentialImps) (multiply (sums otherImps))
     where
     	sums imps = map (selectImps imps) (nub (concat (map impNumbers imps))) 
 	selectImps imps x = filter (elem x . impNumbers) imps
