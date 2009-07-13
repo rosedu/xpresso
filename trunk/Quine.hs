@@ -7,11 +7,17 @@ import Data.Maybe
 import Parser 
 
 {- QuineToken = True, False or Dash -}
-data QuineToken = Care Bool | Dash deriving (Eq, Show)
+data QuineToken = Care Bool | Dash deriving Eq
 type Implicant = [QuineToken]
 
 instance Ord QuineToken where
-	x <= y = x == y || (x == Care False && y == Care True) || (x == Dash)
+    x <= y = x == y || (x == Care False && y == Care True) || (x == Dash)
+
+instance Show QuineToken where
+    show token 
+    	| token == Care True = "1"
+    	| token == Care False = "0"
+    	| token == Dash = "-"
 
 {- eliminates False rows from a TruthTable -}
 cutZeros :: TruthTable -> [Implicant]
@@ -113,11 +119,14 @@ impNumbers imp = case (last imp) of
 petrick :: [Implicant] -> [[Implicant]]
 petrick impList = if (length essentialImps == length impList) 
 			then [essentialImps]
-    else map ((++) essentialImps) (multiply (sums otherImps))
+    else map ((++) essentialImps) (multiply otherSums)
     where
-    	sums imps = map (selectImps imps) (nub (concat (map impNumbers imps))) 
+	sums imps = map (selectImps imps) (nub (concat (map impNumbers imps)))
+	otherSums = map (selectImps otherImps) impNum
+	impNum = (nub (concat (map impNumbers impList))) \\ 
+				(nub (concat (map impNumbers essentialImps)))
 	selectImps imps x = filter (elem x . impNumbers) imps
-	essentialImps = nub $ concat $ filter (\x -> length x==1) (sums impList)
+    	essentialImps = nub $ concat $ filter (\x -> length x==1) (sums impList)
 	otherImps = impList \\ essentialImps
 
 {- multiplies the product of sums into the sum of products and 
@@ -143,7 +152,33 @@ multiply impList = reduce $ nub $ myfoldl folding [] impList
 	myfoldl f acc [] = acc
 	myfoldl f acc (x:lx) = myfoldl f (reduce (f acc x)) lx
 
+{- number of p-input gates required for a k-term conjunction -}
+gateNo :: Int -> Int -> Int
+gateNo p k 
+	| k <= p = 1
+	| k `mod` p == 0 = (k `div` p) + gateNo (k `div` p) p 
+	| k `mod` p <= 1 = (k `div` p) + gateNo (k `div` p + 1) p 
+	| otherwise = (k `div` p + 1) + gateNo (k `div` p) p
+
+{- chooses the min-gate implicant for an AND-OR implementation -}
+minAndOr :: [[Implicant]] -> Int -> Int ->  [Implicant]
+minAndOr impList pAnd pOr = pickMin impList (dimAndOr pAnd pOr)
+    where 
+	dimAndOr pAnd pOr imp = sum (map dimImp imp) + gateNo pOr (length imp)
+	dimImp = gateNo pAnd . length . filter (/= Dash)
+
+{- chooses the min-gate implicant for a NAND expression -}
+minNand impList pNand = minAndOr impList pNand pNand
+{- chooses the min-gate implicant for a NOR expression -}
+minNor impList pNor = minAndOr impList pNor pNor
+
+{- picks the min-value element from a list according to a val function -}
+pickMin :: (Num b, Ord b) => [a] -> (a -> b) -> a
+pickMin (x:[]) val = x
+pickMin (x:lx) val = if (val x) < (val min) then x else min
+	where min = pickMin lx val
+
 {- from an expression, finds groups of implicants with complete coverage -}
-test :: String -> [[Implicant]]
-test expr =  petrick $ getPrimeImplicants $ 
+getMinImps :: String -> [[Implicant]]
+getMinImps expr =  petrick $ getPrimeImplicants $ 
 	cutZeros $ makeTableFromExpr $ fromJust $ play expr 
