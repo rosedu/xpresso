@@ -74,10 +74,10 @@ getNorGate opts vars imps = map transform motherGate
 		(Component "NOT" [(head.cOutputs.head) notNegated] [name])
 			:notNegated
 		else notNegated
-	name = "(" ++ (cOutputs (head notNegated)) ++ ")'"
-    	notNegated = getNandGate opts vars negatedImps
-	negatedImps = map (\x -> if (length (filter (/= Dash) x) == 1) 
-		then x else negateImp x) imps 
+	name = "(" ++ ((head.cOutputs.head) notNegated) ++ ")'"
+    	notNegated = if length imps == 1&&(length.filter (/=Dash).head) imps==1 
+		then getNandGate opts vars imps else
+			getNandGate opts vars (map negateImp imps)
 	negateImp [] = [] 
 	negateImp (x:lx) = case x of 
 		Care True -> Care False 
@@ -90,11 +90,11 @@ getNandGate opts vars imps = if length childNands == 1 then
 	    if (length.filter (/=Dash).head) imps == 1 then 
 	    getAndGate vars (head imps)
 	    else
-   	    [Component  "NOT" (map cOutputs lastGates) ["("++name++")'"]] 
-	    			++ (concat childNands)
+   	    Component  "NOT" (map (head.cOutputs) lastGates) ["("++name++")'"] 
+	    			: (concat childNands)
 	    else
- 	    [Component "NAND" (map cOutputs lastGates ++ singleImps) 
-	    		["("++name++")'"]] ++ (concat childNands)
+ 	    Component "NAND" (map (head.cOutputs) lastGates ++ singleImps) 
+	    		["("++name++")'"] : (concat childNands)
     where
     	childNands = map (getChildNand vars) imps
 	singleImps = map (fst.head.filter (\x -> snd x == Care False)) 
@@ -131,17 +131,17 @@ splitGate :: Int -> Component -> [Component]
 splitGate p gate = if p >= length (cInputs gate) then [gate] else
 	childGates ++ splitGate p motherGate
     where
-    	tempGates = map makeGate $ zip3 (splitName (cOutputs gate)) 
-		      		 	(repeat (cType gate)) 
+    	tempGates = map makeGate $ zip3 (repeat (cType gate)) 
 		      			(splitVars p (cInputs gate))
+					(splitName ((head.cOutputs) gate))
 	childGates = if (length . cInputs . last) tempGates == 1
 		then init tempGates else tempGates
 	residualInput = if (length . cInputs . last) tempGates /= 1 then [] 
 		else (cInputs . last) tempGates
  	makeGate = \(x,y,z) -> (Component x y z)
 	motherGate = makeGate (cType gate, 
-			(map cOutputs childGates) ++ residualInput, [newName])
-	newName = (cOutputs gate) ++ "-" ++ (show . length . cInputs) gate
-	splitName name = map (\x -> name++"_"++show x) [1..] 
+		(map (head.cOutputs) childGates) ++ residualInput, [newName])
+	newName = ((head.cOutputs) gate) ++"-"++ (show . length . cInputs) gate
+	splitName name = map (\x -> [name++"_"++show x]) [1..] 
 	splitVars p list = if length list <= p then [list] else
 		(take p list):(splitVars p (drop p list))
