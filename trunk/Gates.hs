@@ -4,6 +4,7 @@ import Parser
 import Quine
 import IDraw
 
+import List
 import Maybe
 import Data.Map (keys)
 
@@ -20,13 +21,13 @@ data Options = Options {
 {- gets the gates to implement an expression according to certain options -}
 getGates :: String -> Options -> [Component]
 getGates str opts = case circType opts of
-		AndOr -> getOrGate opts vars $ 
+		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
 			$ getMinImps $ str
- 		Nand -> getNandGate opts vars $ (\x->minAndOr x inf inf) $ 
-					getMinImps $ str
-		Nor -> getNorGate opts vars $ (\x->minAndOr x inf inf) $ 
-					getMinImps $ str
+ 		Nand -> prettyNames $ getNandGate opts vars $ 
+			(\x->minAndOr x inf inf) $ getMinImps $ str
+		Nor -> prettyNames $ getNorGate opts vars $ 
+			(\x->minAndOr x inf inf) $ getMinImps $ str
 
    where	 
    	inf  = floor (1/0) 
@@ -145,3 +146,22 @@ splitGate p gate = if p >= length (cInputs gate) then [gate] else
 	splitName name = map (\x -> [name++"_"++show x]) [1..] 
 	splitVars p list = if length list <= p then [list] else
 		(take p list):(splitVars p (drop p list))
+
+prettyNames :: [Component] -> [Component]
+prettyNames list = map replace list -- replace nameMap list
+    where
+    	replace (Component name inputs outputs) = Component name
+		(map (search nameMap) inputs) (map (search nameMap) outputs) 
+	search [] str = str
+	search (x:rest) str = if fst x == str then snd x else search rest str
+    	nameMap = zip (longNames list) $ map ("w"++) $ map show [1..]
+	longNames [] = [] 
+	longNames (x:rest) = union (filter long (cInputs x)) $ 
+			union (filter long (cOutputs x)) (longNames rest)
+	long x = length x > 5 
+
+edgeMap :: [Component] -> [(Component, Component)]
+edgeMap list = nub $ concat $ map (gateEdges) list
+    where
+    	gateEdges x = zip (repeat x) $ filter (commonEdges x) list
+	commonEdges c1 c2 = not $ null $ intersect (cOutputs c1) (cInputs c2)
