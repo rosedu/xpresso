@@ -32,7 +32,6 @@ getPorts instrs = map mkport $ filter isPortDeclaration instrs
 		atoms = words s
 		direction = head atoms
 
-
 {- Gets the statements from an instruction list -}
 getStatmnts :: [String] -> [Statement]
 getStatmnts instrs = map mkstatmnt $ 
@@ -67,4 +66,4 @@ comps = [Component "xor2" ["in1","in2"] ["out"],
 			Component "or2" ["in1","in2"] ["out"]]
 str = "input a b cin\n \
 	   \ output s cout\nxor2 cout a b\nor2 s a b"
-stats = getStatmnts $ instrList st
+stats = getStatmnts $ instrList str
