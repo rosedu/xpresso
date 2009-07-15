@@ -1,7 +1,7 @@
 module Structural where 
 
 -- Imports
--- none yet :P
+import IDraw
 
 -- Type declarations
 type Port = (PortType, [Var])
@@ -10,7 +10,7 @@ data Var = Var String deriving (Eq, Show)
 type Statement = (String, [Var])
 
 {- Brings the module String to a so-called „clean” form - no newline
-	characters, only instructions separated by ';' -}
+	characters, only instructions separated by '\n' -}
 instrList :: String -> [String]
 instrList s = lines s
 
@@ -42,3 +42,29 @@ getStatmnts instrs = map mkstatmnt $
 		func = head atoms
 		vars = map Var $ tail atoms
 
+statementToInstance :: Statement -> Component -> Component
+statementToInstance  
+	(_, vars) (Component name ins outs) = 
+	Component name (snd spl) (fst spl) where
+	spl = splitAt (length outs) $ map (\ (Var x) -> x) vars
+
+{- We get a list of Components out of our list of Statements. In a
+	perfect world, we can find a Component that matches the name
+	that we need for our Statement. In a non-perfect world, we will use
+	monads, but that'll happen later -}
+{- Morphs Statements into Components -}
+getComponentList :: [Statement] -> [Component] -> [Component]
+getComponentList sts comps = 
+	map (\ s -> statementToInstance s (lookupComp s comps)) sts
+	where
+	lookupComp (nm1, vars) ((Component nm2 ins outs) : rest)
+		| nm1 == nm2 = Component nm2 ins outs
+		| otherwise = lookupComp (nm1, vars) rest -- TODO: handle errors
+
+
+-- Testing stuff
+comps = [Component "xor2" ["in1","in2"] ["out"],
+			Component "or2" ["in1","in2"] ["out"]]
+str = "input a b cin\n \
+	   \ output s cout\nxor2 cout a b\nor2 s a b"
+stats = getStatmnts $ instrList st
