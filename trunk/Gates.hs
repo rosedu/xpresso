@@ -46,7 +46,7 @@ getOrGate opts vars imps = orGate ++ (concat andGates)
 	singleImp imp = length (filter (== Care True) imp) == 1 &&
 			length (filter (== Care False) imp) == 0
 	orGate = if (length imps <= 1) then [] else splitGate (pOr opts) 
-	    	(Component "OR" ((map cOutputs lastGates) ++ singleImps) [name])
+	    	(Component "OR" ((map (head.cOutputs) lastGates) ++ singleImps) 			[name])
 	name = tail $ concat $ map (\x -> "+"++show x) imps
 
 {- given a list of variable names and an implicant, returns the corresponding
@@ -56,8 +56,8 @@ getAndGate vars imp = andGate ++ notGates
     where
     	notGates = map fromJust $ filter isJust $ map getNotGate varPairs 
 	andGate = if (length (filter (/= Dash) imp) <= 1 ) then [] else
-	    Component "AND" (filter (/= []) (map getName varPairs)):[] [name]
-	varName = concat (map show imp)
+	    [Component "AND" (filter (/= []) (map getName varPairs)) [name]]
+	name = concat (map show imp)
 	varPairs = zip imp vars
 	getName (token, var) 
 	    | token == Dash = []
@@ -71,7 +71,8 @@ getNorGate opts vars imps = map transform motherGate
 		Component "NOR" (cInputs gate) (cOutputs gate) 
     	motherGate = if notNegated == [] then [] else
 		if (cType.head) notNegated == "NAND" then 
-		Component "NOT" [cOutputs (head notNegated)]:notNegated [name]
+		(Component "NOT" [(head.cOutputs.head) notNegated] [name])
+			:notNegated
 		else notNegated
 	name = "(" ++ (cOutputs (head notNegated)) ++ ")'"
     	notNegated = getNandGate opts vars negatedImps
