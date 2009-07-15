@@ -18,18 +18,6 @@ edges = [(Component "AND" ["i", "w"] ["x"], Component "ID" ["x"] ["xx"]),
       (Component "ID" ["x"] ["xx"], Component "BQ" ["xx", "c"] ["w", "Q'"]),
       (Component "BQ" ["xx", "c"] ["w", "Q'"], Component "AND" ["i", "w"] ["x"])]
 
-gateinputs = foldl (++) [] $ map cInputs nodes
-gateoutputs = foldl (++) [] $ map cOutputs nodes
-schemainputs = gateinputs \\ gateoutputs
-schemaoutputs = gateoutputs \\ gateinputs
-firstgates = filter f nodes
-    where
-	f x = [] /= schemainputs `intersect` cInputs x
-lastgates = filter f nodes
-    where
-	f x = [] /= schemaoutputs `intersect` cOutputs x
-schemawithoutlast = nodes \\ lastgates
-
 striplevel :: [Component] -> [Component]
 striplevel schema  = schema \\ last
     where
