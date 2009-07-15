@@ -1,6 +1,6 @@
 module IDraw where
 
-data Component = {
+data Component = Component {
     CType :: String,
     CInputs :: [String],
     COutputs :: [String]
