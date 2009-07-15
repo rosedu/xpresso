@@ -28,6 +28,7 @@ striplevel schema  = schema \\ last
 	gateinputs = foldl (++) [] $ map cInputs schema
 
 getLevels :: [Component] -> [[Component]]
+getLevels [] = []
 getLevels n = [head n] : (zipWith (\\) l $ tail l)
     where
 	l = takeWhile (/= []) $ iterate striplevel n
