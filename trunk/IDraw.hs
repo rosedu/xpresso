@@ -21,7 +21,8 @@ data SVGPort = SVGPort {
 
 data SVGComponent = SVGComponent {
     svgcType :: String,
-    svgcPorts :: [SVGPort]
+    svgcPorts :: [SVGPort],
+    svgcDefs :: String
     } deriving (Eq, Show)
 
 type Node = Component
