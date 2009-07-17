@@ -8,6 +8,22 @@ data Component = Component {
     cOutputs :: [String]
     } deriving (Eq, Show)
 
+data SVGPoint = SVGPoint {
+    svgX :: Int,
+    svgY :: Int
+    } deriving (Eq, Show)
+
+data SVGPort = SVGPort {
+    svgStart :: SVGPoint,
+    svgStop :: SVGPoint,
+    svgLabel :: String
+    } deriving (Eq, Show)
+
+data SVGComponent = SVGComponent {
+    svgcType :: String,
+    svgcPorts :: [SVGPort]
+    } deriving (Eq, Show)
+
 type Node = Component
 type Edge = (Component, Component)
 
