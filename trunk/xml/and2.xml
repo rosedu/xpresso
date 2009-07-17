@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- Xpresso definition for AND combinational gate
+	with two binary inputs -->
+<gate type="and2">
+	<inputs>
+		<port name="in1" x1="31" y1="15" x2="5" y2="15" />
+		<port name="in2" x1="31" y1="35" x2="5" y2="35" />
+	</inputs>
+	
+	<outputs>
+		<port name="out" x1="70" y1="25" x2="96" y2="25" />
+	</outputs>
+
+	<svg href="svg/and2.svg" />
+</gate>

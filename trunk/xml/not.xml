@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- Xpresso definition for NOT combinational gate -->
+<gate type="not">
+	<inputs>
+		<port name="in" x1="29" y1="25" x2="5.1" y2="25" />
+	</inputs>
+	
+	<outputs>
+		<port name="out" x1="79" y1="25" x2="95" y2="25" />
+	</outputs>
+
+	<svg href="svg/not.svg" />
+</gate>
