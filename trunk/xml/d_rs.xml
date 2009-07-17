@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<!-- Xpresso definition for D Flip-Flop gate,
+	with Set and Reset pins -->
+
+<gate type="d_rs">
+	<inputs>
+		<port name="D" x1="21" y1="40" x2="5" y2="40" />
+		<port name="CLK" x1="21" y1="80" x2="5" y2="80" />
+		<port name="S" x1="50" y1="21" x2="50" y2="5" />
+		<port name="R" x1="50" y1="99" x2="50" y2="115" />
+	</inputs>
+
+	<outputs>
+		<port name="Qneg" x1="79" y1="80" x2="95" y2="80" />
+		<port name="Q" x1="79" y1="40" x2="95" y2="40" />
+	</outputs>
+	<svg href="../svg/d_rs.svg" />
+</gate>
+
