@@ -51,6 +51,9 @@ data WireMap = WireMap {
     portEnd :: String
     } deriving (Eq, Show)
 
+globalDELTAMIN = 10
+globalLEVELWIREDELTA = 10
+
 {-tobedeleted-}
 nodes = [Component "AND" ["i", "w"] ["x"], 
       Component "BQ" ["xx", "c"] ["w", "Q'"],
@@ -104,10 +107,11 @@ getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c)
     (reverse $ map svgLabel $ svgcPorts svg)
 
 placeComponents :: [(Component, SVGComponent)] -> ([SVGPComponent], [WireMap])
-placeComponents pairs = error . show $ getLevels $ map fst pairs--(input, output)
+placeComponents pairs = error . show $ (input, output)
     where
 	input = map f pairs
 	f x = getGateInputWireMapping (fst x) (snd x)
 	output = map f' pairs
 	f' x = getGateOutputWireMapping (fst x) (snd x)
 
+--placeLevel :: [(Component, SVGComponent)] -> [SVGComponent]
