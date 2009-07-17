@@ -28,7 +28,9 @@ data SVGPort = SVGPort {
 data SVGComponent = SVGComponent {
     svgcType :: String,
     svgcPorts :: [SVGPort],
-    svgcDefs :: String
+    svgcDefs :: String,
+    svgcW :: Int,
+    svgcH :: Int
     } deriving (Eq, Show)
 
 {- Resulting SVG path between two omponents -}
@@ -59,10 +61,10 @@ edges = [(Component "AND" ["i", "w"] ["x"], Component "ID" ["x"] ["xx"]),
       (Component "BQ" ["xx", "c"] ["w", "Q'"], Component "AND" ["i", "w"] ["x"]),
       (Component "ID" ["t"] ["c"], Component "BQ" ["xx", "c"] ["w", "Q'"])]
 parsedSVGComponents = [
-    SVGComponent "AND" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "B", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet",
-    SVGComponent "ID" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet",
-    SVGComponent "BQ" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "D", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "T", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "Q", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "Q'"] "nodefyet",
-    SVGComponent "MUX" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "B", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "C", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet"]
+    SVGComponent "AND" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "B", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet" 6 4,
+    SVGComponent "ID" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet" 8 6,
+    SVGComponent "BQ" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "D", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "T", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "Q", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "Q'"] "nodefyet" 8 10,
+    SVGComponent "MUX" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "B", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "C", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet" 8 10]
 {-untilhere-}
 
 striplevel :: [Component] -> [Component]
@@ -80,6 +82,12 @@ getLevels n = [head n] : (reverse . zipWith (\\) l $ tail l)
     where
 	l = takeWhile (/= []) $ iterate striplevel n
 
+getGlobalFanInofLevel :: [Component] -> Int
+getGlobalFanInofLevel c = foldl (+) 0 $ map length $ map cInputs c
+
+getGatesInaLevel :: [Component] -> Int
+getGatesInaLevel c = length c
+
 getUsedSVGComponents :: [Component] -> [SVGComponent] -> 
     [(Component, SVGComponent)]
 getUsedSVGComponents [] svg = []
@@ -95,10 +103,11 @@ getGateOutputWireMapping :: Component -> SVGComponent -> [(String, String)]
 getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c) 
     (reverse $ map svgLabel $ svgcPorts svg)
 
-getWireMapping :: [(Component, SVGComponent)] -> [WireMap]
-getWireMapping pairs = error . show $ output
+placeComponents :: [(Component, SVGComponent)] -> ([SVGPComponent], [WireMap])
+placeComponents pairs = error . show $ getLevels $ map fst pairs--(input, output)
     where
 	input = map f pairs
 	f x = getGateInputWireMapping (fst x) (snd x)
 	output = map f' pairs
 	f' x = getGateOutputWireMapping (fst x) (snd x)
+
