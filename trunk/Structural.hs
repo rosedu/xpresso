@@ -2,11 +2,12 @@ module Structural where
 
 -- Imports
 import IDraw
+import Data.List
 
 -- Type declarations
 type Port = (PortType, [Var])
 data PortType = Input | Output | Wire deriving (Eq, Show)
-data Var = Var String deriving (Eq, Show)
+data Var = Var String | Const Bool deriving (Eq, Show)
 type Statement = (String, [Var])
 
 {- Brings the module String to a so-called „clean” form - no newline
@@ -22,8 +23,15 @@ isPortDeclaration s = (direction == "input") || (direction == "output")
 
 {- Gets all the ports from an instruction list -}
 getPorts :: [String] -> [Port]
-getPorts instrs = map mkport $ filter isPortDeclaration instrs
+getPorts instrs = ins : outs : wires : []
 	where
+	ports = map mkport $ filter isPortDeclaration instrs
+	ins = foldPorts Input $ filter (equalPort Input) ports
+	outs = foldPorts Output $ filter (equalPort Output) ports
+	wires = foldPorts Wire $ filter (equalPort Wire) ports	
+	foldPorts tp l = foldr (\ (tp1, v1) (tp2, v2) -> (tp1, v1 ++ v2))
+		(tp, []) l
+	equalPort prt (tp, _) = tp == prt
 	mkport s 
 		| direction == "input" = (Input, map Var (tail atoms))
 		| direction == "wire" = (Wire, map Var (tail atoms))
@@ -64,6 +72,7 @@ getComponentList sts comps =
 -- Testing stuff
 comps = [Component "xor2" ["in1","in2"] ["out"],
 			Component "or2" ["in1","in2"] ["out"]]
-str = "input a b cin\n \
+st = "input a b\ninput cin\n \
 	   \ output s cout\nxor2 cout a b\nor2 s a b"
-stats = getStatmnts $ instrList str
+stats = getStatmnts $ instrList st
+ports = getPorts $ instrList st
