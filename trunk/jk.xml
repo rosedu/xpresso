@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<gate type="jk">
+	<inputs>
+		<port name="J" x1="21" y1="30" x2="5" y2="30" />
+		<port name="K" x1="21" y1="70" x2="5" y2="70" />
+		<port name="CLK" x1="21" y1="50" x2="5" y2="50" />
+	</inputs>
+	<outputs>
+		<port name="Q" x1="95" y1="30" x2="79" y2="30" />
+		<port name="Qneg" x1="95" y1="70" x2="79" y2="70" />
+	</outputs>
+	<svg href="svg/jk.svg" />
+</gate>

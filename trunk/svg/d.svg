@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<svg width="100%" height="100%" version="1.1" 
+	 xmlns="http://www.w3.org/2000/svg"
+	 xmlns:xlink="http://www.w3.org/1999/xlink"
+	 >
+
+<defs>
+	<g id="d">
+	<g id="linerect">
+<rect y="11.500001" x="21.499998" height="77" width="56.999996" id="rect1311" style="opacity: 1; fill: none; fill-opacity: 0.037037; stroke: rgb(0, 0, 0); stroke-width: 3; stroke-linecap: square; stroke-miterlimit: 4; stroke-dasharray: none; stroke-dashoffset: 0pt; stroke-opacity: 1;"/>
+      <path id="D" d="M 21,30 L 5,30" style="fill: none; fill-opacity: 0.75; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1;" /> 
+      <path id="CLK" d="M 21,70 L 5,70" style="fill: none; fill-opacity: 0.75; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1;" /> 
+      <path id="Qneg" d="M 79,70 L 95,70" style="fill: none; fill-opacity: 0.75; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1;" /> 
+      <path id="Q" d="M 79,30 L 95,30" style="fill: none; fill-opacity: 0.75; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1;" /> 
+ 
+	</g>
+	<g id="text">
+<path style="fill: none; fill-opacity: 0.75; fill-rule: evenodd; stroke: rgb(0, 0, 0); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1;" d="M 63.806565,62 L 73.306565,62" id="path3081"/>
+    <text xml:space="preserve" style="font-size: 14px; font-style: normal; font-variant: normal; font-weight: normal; font-stretch: normal; line-height: 100%; text-anchor: end; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1; font-family: DejaVu Sans;" x="35.8906" y="34.7734" id="text3850" ><tspan id="tspan3852" x="35.8906" y="34.7734">D</tspan></text>
+    <text xml:space="preserve" style="font-style: normal; font-variant: normal; font-weight: normal; font-stretch: normal; line-height: 100%; text-anchor: end; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1; font-family: DejaVu Sans;" x="73.9076" y="35" id="text3858" ><tspan id="tspan3860" x="73.9076" y="35">Q</tspan></text>
+    <text xml:space="preserve" style="font-style: normal; font-variant: normal; font-weight: normal; font-stretch: normal; line-height: 100%; text-anchor: end; fill: rgb(0, 0, 0); fill-opacity: 1; stroke: none; stroke-width: 1px; stroke-linecap: butt; stroke-linejoin: miter; stroke-opacity: 1; font-family: DejaVu Sans;" x="73.8256" y="75" id="text3863" ><tspan id="tspan3865" x="73.8256" y="75">Q</tspan></text>
+    <path style="opacity: 1; fill: none; fill-opacity: 1; stroke: rgb(0, 0, 0); stroke-width: 2; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 4; stroke-dasharray: none; stroke-opacity: 1;" d="M 21.0625,65 L 32.5625,70 L 21.0625,75" id="path3888" />
+ 
+	</g>
+	</g>
+</defs>
+<use xlink:href="#d" x="0" y="0" />
+</svg>
