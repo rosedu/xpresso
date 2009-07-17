@@ -20,11 +20,14 @@ unsafeReadFile :: String -> String
 unsafeReadFile filePath = unsafePerformIO $ readFile filePath
 
 getGateComp :: String -> SVGComponent
-getGateComp xml = SVGComponent (getType gateElem) svgPorts (getSvgFile svgElem)
+getGateComp xml = SVGComponent svgType svgPorts svgFile w h
     where
     	{- gate type -}
     	gateElem = (\(CElem x) -> x) $ head $ tag "gate" $ CElem root   
-	getType (Elem  _ [(_,AttValue [Left val])] _)  = val
+	(svgType,[w, h]) = (getVal "type", map (read.getVal) ["width","height"])
+	    where
+		list = map nameValTuples $ getAttrList gateElem
+		getVal var = snd $ head $ filter ((==var) . fst) list
 
 	{- list of ports -}
 	svgPorts =  map (makePort . map nameValTuples . getAttrList) $ 
@@ -37,11 +40,11 @@ getGateComp xml = SVGComponent (getType gateElem) svgPorts (getSvgFile svgElem)
 	nameValTuples (name, (AttValue [Left val])) = (name, val)
 	makePort list = SVGPort (SVGPoint x1 y1) (SVGPoint x2 y2) label
 	    where
-	    	[x1, y1, x2, y2] = map (read.getVals) ["x1", "y1", "x2", "y2"]
-		getVals var = snd $ head $ filter ((==var) . fst) list
-	    	label = getVals "name"
+	    	[x1, y1, x2, y2] = map (read.getVal) ["x1", "y1", "x2", "y2"]
+		getVal var = snd $ head $ filter ((==var) . fst) list
+	    	label = getVal "name"
 
 	{- SVG code -}
 	svgElem = (\(CElem x)->x) $ head $ tag "gate" /> tag "svg" $ CElem root
 	getSvgFile (Elem  _ [(_,AttValue [Left path])] _) = unsafeReadFile path
-
+	svgFile = getSvgFile svgElem
