@@ -12,5 +12,5 @@
 		<port name="Q" x1="79" y1="30" x2="95" y2="30" />
 		<port name="Qneg" x1="79" y1="70" x2="95" y2="70" />
 	</outputs>
-	<svg href="../svg/jk.svg" />
+	<svg href="svg/jk.svg" />
 </gate>
