@@ -6,15 +6,15 @@
 <gate type="jk_rs">
 	<inputs>
 		<port name="J" x1="21" y1="40" x2="5" y2="40" />
-		<port name="K" x1="21" y1="80" x2="5" y2="80" />
 		<port name="CLK" x1="21" y1="60" x2="5" y2="60" />
+		<port name="K" x1="21" y1="80" x2="5" y2="80" />
 		<port name="S" x1="50" y1="21" x2="50" y2="5" />
 		<port name="R" x1="50" y1="99" x2="50" y2="115" />
 	</inputs>
 
 	<outputs>
-		<port name="Qneg" x1="79" y1="80" x2="95" y2="80" />
 		<port name="Q" x1="79" y1="40" x2="95" y2="40" />
+		<port name="Qneg" x1="79" y1="80" x2="95" y2="80" />
 	</outputs>
 	<svg href="../svg/jk_rs.svg" />
 </gate>

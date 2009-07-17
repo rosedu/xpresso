@@ -12,8 +12,8 @@
 	</inputs>
 
 	<outputs>
-		<port name="Qneg" x1="79" y1="80" x2="95" y2="80" />
 		<port name="Q" x1="79" y1="40" x2="95" y2="40" />
+		<port name="Qneg" x1="79" y1="80" x2="95" y2="80" />
 	</outputs>
 	<svg href="../svg/d_rs.svg" />
 </gate>
