@@ -22,7 +22,7 @@ data CircuitType = AndOr | Nand | Nor
 	a list of components that implement the minimized expression -}
 getGates :: String -> Options -> [Component]
 getGates str opts = case circType opts of
-		AndOr -> getOrGate opts vars $ 
+		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
 			$ getMinImps $ str
  		Nand -> prettyNames $ getNandGate opts vars $ 
@@ -178,3 +178,10 @@ edgeMap list = nub $ concat $ map (gateEdges) list
     where
     	gateEdges x = zip (repeat x) $ filter (commonEdges x) list
 	commonEdges c1 c2 = not $ null $ intersect (cOutputs c1) (cInputs c2)
+
+getVerilog :: [Component] -> String
+getVerilog compList = concat $ map compString compList
+    where
+    	compString comp = (cType comp) ++ " " ++ 
+			((concat . map (++ " ")) (cInputs comp)) ++ " " ++
+			((concat . map (++ " ")) (cOutputs comp)) ++ "\n"
