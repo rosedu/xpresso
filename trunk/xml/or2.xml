@@ -2,7 +2,7 @@
 
 <!-- Xpresso definition for OR combinational gate
 	with two binary inputs -->
-<gate type="or2">
+<gate type="or2" width="100" height="50">
 	<inputs>
 		<port name="in1" x1="31" y1="15" x2="5" y2="15" />
 		<port name="in2" x1="31" y1="35" x2="5" y2="35" />
