@@ -1,7 +1,12 @@
 module IDraw where
 {--}
 
-import Data.List ((\\), intersect)
+import Data.List (
+    (\\)
+    , intersect
+    , sortBy
+    , findIndex
+    )
 
 {-Structural and combinational component-}
 data Component = Component {
@@ -100,19 +105,52 @@ getUsedSVGComponents (c:cs) svg = l : (getUsedSVGComponents cs svg)
 	l = (c, head $ filter f svg)
 	f x = svgcType x == cType c
 
+getUsedSVGComponentsSorted :: [Component] -> [SVGComponent] ->
+    [(Component, SVGComponent)]
+getUsedSVGComponentsSorted c svgc = sortBy f $ getUsedSVGComponents c svgc
+    where
+	f (c1, _) (c2, _) = ic1 `compare` ic2
+	    where
+		levels = getLevels c
+		ic1 = findIndex p1 levels
+		ic2 = findIndex p2 levels
+		p1 lvl = c1 `elem` lvl
+		p2 lvl = c2 `elem` lvl
+
+getLevelsOfUsedSVGComponents :: [Component] -> [SVGComponent] ->
+    [[(Component, SVGComponent)]]
+getLevelsOfUsedSVGComponents c svgc = map f levels
+    where
+	levels = getLevels c
+	svglevels = getUsedSVGComponentsSorted c svgc
+	f level = map g level
+	g gateinlevel = (gateinlevel, snd . head $ filter p svglevels)
+	    where
+		p svgl = gateinlevel == fst svgl
+
 getGateInputWireMapping :: Component -> SVGComponent -> [(String, String)]
 getGateInputWireMapping c svg = zip (cInputs c) (map svgLabel $ svgcPorts svg)
 
 getGateOutputWireMapping :: Component -> SVGComponent -> [(String, String)]
-getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c) 
+getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c)
     (reverse $ map svgLabel $ svgcPorts svg)
 
-placeComponents :: [(Component, SVGComponent)] -> ([SVGPComponent], [WireMap])
-placeComponents pairs = error . show $ (input, output)
+placeComponents :: [[(Component, SVGComponent)]] -> ([SVGPComponent], [WireMap])
+placeComponents lpairs = foldr f ([], []) $ map placeComponentsInLevel lpairs
+    where
+	f (s, w) (ss, ws) = (s++ss, w++ws)
+
+placeComponentsInLevel :: [(Component, SVGComponent)] -> 
+    ([SVGPComponent], [WireMap])
+placeComponentsInLevel pairs = error . show $ (input, output)
     where
 	input = map f pairs
 	f x = getGateInputWireMapping (fst x) (snd x)
 	output = map f' pairs
 	f' x = getGateOutputWireMapping (fst x) (snd x)
+
+--to be deleted
+levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
+--until here}
 
 --placeLevel :: [(Component, SVGComponent)] -> [SVGComponent]
