@@ -20,21 +20,35 @@ data CircuitType = AsIs | AndOr | Nand | Nor
 
 {- Given a logical expression and some minimization restrictions, returns
 	a list of components that implement the minimized expression -}
-getGates :: String -> Options -> [Component]
-getGates str opts = case circType opts of
+getGatesFromExpr :: String -> Options -> [Component]
+getGatesFromExpr str opts = case circType opts of
 		AsIs  -> getGatesAsIs $ fromJust $ play str
 		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
-			$ getMinImps $ str
+			$ getMinImps $ table
  		Nand  -> prettyNames $ getNandGate opts vars $ 
-			(\x->minAndOr x inf inf) $ getMinImps $ str
+			(\x->minAndOr x inf inf) $ getMinImps $ table
 		Nor   -> prettyNames $ getNorGate opts vars $ 
-			(\x->minAndOr x inf inf) $ getMinImps $ str
+			(\x->minAndOr x inf inf) $ getMinImps $ table
 
    where	 
    	inf  = floor (1/0) 
 	expr = fromJust $ play str
 	vars = keys $ getVars expr
+	table = makeTableFromExpr $ fromJust $ play str
+
+getGatesFromTable :: [String] -> TruthTable -> Options -> [Component]
+getGatesFromTable vars table opts = case circType opts of
+		AndOr -> prettyNames $ getOrGate opts vars $ 
+			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
+			$ getMinImps $ table
+ 		Nand  -> prettyNames $ getNandGate opts vars $ 
+			(\x->minAndOr x inf inf) $ getMinImps $ table
+		Nor   -> prettyNames $ getNorGate opts vars $ 
+			(\x->minAndOr x inf inf) $ getMinImps $ table
+
+   where	 
+   	inf  = floor (1/0) 
 
 {- Given a list of variable names and a list of implicants, returns the
 	AndOr circuit implementation (an OR mothergate and AND childgates) -}
@@ -214,9 +228,9 @@ getGatesAsIs _ = []
 getName :: Expr -> String
 getName (Var a) = a
 getName (Uno Not a) = getName a ++ "'"
-getName (Duo And a b) = getName a ++ " AND " ++ (getName b)
-getName (Duo Or a b) = getName a ++ " OR " ++ (getName b)
-getName (Duo Xor a b) = getName a ++ " XOR " ++ (getName b)
+getName (Duo And a b) = getName a ++ "_AND_" ++ (getName b)
+getName (Duo Or a b) = getName a ++ "_OR_" ++ (getName b)
+getName (Duo Xor a b) = getName a ++ "_XOR_" ++ (getName b)
 getName x = show x
     	  
 

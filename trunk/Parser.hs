@@ -117,3 +117,21 @@ makeTableFromTableAux (x:full) tt = if (elem x tt) then
 			else 
 				(x, False): (makeTableFromTableAux full tt)
 
+parseTT1 :: String -> ([String],TruthTable)
+parseTT1 raw = (vars, Prelude.map makeTuple table)
+    where
+    	rows = lines raw
+	vars = words $ head rows
+	unparsed = Prelude.map words $ tail rows
+	table = Prelude.map getRow unparsed
+	getRow row = Prelude.map (\x -> if x=="0" then False else True) row
+	makeTuple list = (init list, last list)
+
+parseTT2 :: String -> ([String],TruthTable)
+parseTT2 raw = (vars, table)
+    where
+    	rows = lines raw
+	vars = words $ head rows
+	unparsed = Prelude.map words $ tail rows
+	table = makeTableFromTable $ Prelude.map getRow unparsed
+	getRow row = Prelude.map (\x -> if x=="0" then False else True) row

@@ -179,6 +179,6 @@ pickMin (x:lx) val = if (val x) < (val min) then x else min
 	where min = pickMin lx val
 
 {- from an expression, finds groups of implicants with complete coverage -}
-getMinImps :: String -> [[Implicant]]
-getMinImps expr =  petrick $ getPrimeImplicants $ 
-	cutZeros $ makeTableFromExpr $ fromJust $ play expr 
+getMinImps :: TruthTable -> [[Implicant]]
+getMinImps table =  petrick $ getPrimeImplicants $ 
+	cutZeros $ table --makeTableFromExpr $ fromJust $ play expr 
