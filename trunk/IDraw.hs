@@ -53,13 +53,6 @@ data SVGPComponent = SVGPComponent {
     svgCorner :: SVGPoint
     } deriving (Eq, Show)
 
-{- Mapping between wires and port names -}
-data WireMap = WireMap {
-    wireName :: String,
-    portStart :: String,
-    portEnd :: String
-    } deriving (Eq, Show)
-
 globalDELTAMIN = 2
 globalLEVELWIREDELTA = 2
 
@@ -68,10 +61,6 @@ nodes = [Component "AND" ["i", "w"] ["x"],
       Component "BQ" ["xx", "c"] ["w", "Q'"],
       Component "ID" ["x"] ["xx"],
       Component "ID" ["t"] ["c"]]
-edges = [(Component "AND" ["i", "w"] ["x"], Component "ID" ["x"] ["xx"]),
-      (Component "ID" ["x"] ["xx"], Component "BQ" ["xx", "c"] ["w", "Q'"]),
-      (Component "BQ" ["xx", "c"] ["w", "Q'"], Component "AND" ["i", "w"] ["x"]),
-      (Component "ID" ["t"] ["c"], Component "BQ" ["xx", "c"] ["w", "Q'"])]
 parsedSVGComponents = [
     SVGComponent "AND" [SVGPort (SVGPoint 2 1) (SVGPoint 0 1) "A", SVGPort (SVGPoint 2 3) (SVGPoint 0 3) "B", SVGPort (SVGPoint 4 2) (SVGPoint 6 2) "X"] "nodefyet" 6 4,
     SVGComponent "ID" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 6 4) (SVGPoint 8 4) "X"] "nodefyet" 8 6,
@@ -138,7 +127,7 @@ getGateOutputWireMapping :: Component -> SVGComponent -> [(String, String)]
 getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c)
     (reverse $ map svgLabel $ svgcPorts svg)
 
-placeComponents :: [[(Component, SVGComponent)]] -> ([SVGPComponent], [WireMap])
+placeComponents :: [[(Component, SVGComponent)]] -> ([SVGPComponent], [SVGPath])
 placeComponents lpairs = (components, wires)
     where
 	components = foldl (++) [] $ unfoldr placeLevels (0, lpairs)
@@ -185,7 +174,7 @@ placeComponentsInLevel x pairs = error . show $ (input, output)
 levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 --until here}
 
-makeSVGFile :: [Component] -> [SVGPComponent] -> IO()
+makeSVGFile :: [Component] -> [SVGComponent] -> IO()
 makeSVGFile nodes parsed = do
 	let levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 	let (components, wires) = placeComponents levels
