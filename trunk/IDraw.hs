@@ -6,6 +6,7 @@ import Data.List (
     , intersect
     , sortBy
     , findIndex
+    , unfoldr
     )
 
 {-Structural and combinational component-}
@@ -135,22 +136,33 @@ getGateOutputWireMapping :: Component -> SVGComponent -> [(String, String)]
 getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c)
     (reverse $ map svgLabel $ svgcPorts svg)
 
-placeComponents :: [[(Component, SVGComponent)]] -> ([SVGPComponent], [WireMap])
-placeComponents lpairs = foldr f ([], []) $ map placeComponentsInLevel lpairs
+placeComponents :: [[(Component, SVGComponent)]] ->([SVGPComponent], [WireMap])
+placeComponents lpairs = (components, wires)
     where
-	f (s, w) (ss, ws) = (s++ss, w++ws)
+	components = foldl (++) [] $ unfoldr placeLevels (0, lpairs)
+	p x = True
+	wires = []
 
-placeComponentsInLevel :: [(Component, SVGComponent)] -> 
+placeLevels :: (Integer, [[(Component, SVGComponent)]]) -> 
+    Maybe ([SVGPComponent], (Integer, [[(Component, SVGComponent)]]))
+placeLevels (_, []) = Nothing
+placeLevels (x, lvl:lvls) = Just (components, (y, lvls))
+    where
+	(y, components) = placeLevel y lvl
+
+placeLevel :: Integer->[(Component, SVGComponent)]-> (Integer, [SVGPComponent])
+placeLevel x y = undefined
+
+{--
+placeComponentsInLevel :: Integer -> [(Component, SVGComponent)] -> 
     ([SVGPComponent], [WireMap])
-placeComponentsInLevel pairs = error . show $ (input, output)
+placeComponentsInLevel x pairs = error . show $ (input, output)
     where
 	input = map f pairs
 	f x = getGateInputWireMapping (fst x) (snd x)
 	output = map f' pairs
-	f' x = getGateOutputWireMapping (fst x) (snd x)
+	f' x = getGateOutputWireMapping (fst x) (snd x)--}
 
 --to be deleted
 levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 --until here}
-
---placeLevel :: [(Component, SVGComponent)] -> [SVGComponent]
