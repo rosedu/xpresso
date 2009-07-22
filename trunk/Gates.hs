@@ -16,18 +16,19 @@ data Options = Options {
     pNand    :: Int,
     pNor     :: Int
 }
-data CircuitType = AndOr | Nand | Nor
+data CircuitType = AsIs | AndOr | Nand | Nor
 
 {- Given a logical expression and some minimization restrictions, returns
 	a list of components that implement the minimized expression -}
 getGates :: String -> Options -> [Component]
 getGates str opts = case circType opts of
+		AsIs  -> getGatesAsIs $ fromJust $ play str
 		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
 			$ getMinImps $ str
- 		Nand -> prettyNames $ getNandGate opts vars $ 
+ 		Nand  -> prettyNames $ getNandGate opts vars $ 
 			(\x->minAndOr x inf inf) $ getMinImps $ str
-		Nor -> prettyNames $ getNorGate opts vars $ 
+		Nor   -> prettyNames $ getNorGate opts vars $ 
 			(\x->minAndOr x inf inf) $ getMinImps $ str
 
    where	 
@@ -179,9 +180,43 @@ edgeMap list = nub $ concat $ map (gateEdges) list
     	gateEdges x = zip (repeat x) $ filter (commonEdges x) list
 	commonEdges c1 c2 = not $ null $ intersect (cOutputs c1) (cInputs c2)
 
+{- returns the pseudo-Verilog description of a component list -}
 getVerilog :: [Component] -> String
 getVerilog compList = concat $ map compString compList
     where
     	compString comp = (cType comp) ++ " " ++ 
 			((concat . map (++ " ")) (cInputs comp)) ++ " " ++
 			((concat . map (++ " ")) (cOutputs comp)) ++ "\n"
+
+{- returns a list of components that implement a non-minimized expression -}
+getGatesAsIs :: Expr -> [Component]
+getGatesAsIs (Uno Not a) = Component "NOT" [name] [getName a ++ "'"] : child
+    where 
+    	child = getGatesAsIs a
+	name = if child == [] then getName a else (head.cOutputs.head) child
+
+getGatesAsIs (Duo op a b) = Component opName 
+	[name_a, name_b] [getName (Duo op a b)]:(child_a ++ child_b)
+    where 
+    	child_a = getGatesAsIs a
+	child_b = getGatesAsIs b
+	name_a = if child_a == [] then getName a 
+		else (head.cOutputs.head) child_a
+	name_b = if child_b == [] then getName b
+		else (head.cOutputs.head) child_b
+	opName = case op of
+		And -> "AND"
+		Or -> "OR"
+		Xor -> "XOR"
+getGatesAsIs _ = []
+
+{- returns a string representation of an expression -}
+getName :: Expr -> String
+getName (Var a) = a
+getName (Uno Not a) = getName a ++ "'"
+getName (Duo And a b) = getName a ++ " AND " ++ (getName b)
+getName (Duo Or a b) = getName a ++ " OR " ++ (getName b)
+getName (Duo Xor a b) = getName a ++ " XOR " ++ (getName b)
+getName x = show x
+    	  
+

@@ -17,16 +17,19 @@ data Expr = Var String | Con Bool | Uno Unop Expr | Duo Duop Expr Expr
 {- tipul operator unar -}
 data Unop = Not deriving Show
 {- tipul operator dual -}
-data Duop = And | Or deriving Show
+data Duop = And | Or | Xor deriving Show
 
 type TruthTable = [([Bool], Bool)]
+
+xor :: Bool -> Bool -> Bool
+xor a b = if a==b then False else True
 
 {- specificatia sintaxei -}
 def = emptyDef{ identStart = letter
               , identLetter = alphaNum
-              , opStart = oneOf "'+*~"
-              , opLetter = oneOf "'+*~"
-              , reservedOpNames = ["~", "+", "*", "'"]
+              , opStart = oneOf "'+*~^"
+              , opLetter = oneOf "'+*~^"
+              , reservedOpNames = ["~", "+", "*", "'", "^"]
 	      , reservedNames = ["0", "1"]
               }
 
@@ -44,6 +47,7 @@ exprParser = buildExpressionParser table term <?> "expression"
 table = [ [Prefix (m_reservedOp "~" >> return (Uno Not))]
         , [Postfix (m_reservedOp "'" >> return (Uno Not))]
         , [Infix (m_reservedOp "*" >> return (Duo And)) AssocLeft]
+        , [Infix (m_reservedOp "^" >> return (Duo Xor)) AssocLeft]
         , [Infix (m_reservedOp "+" >> return (Duo Or)) AssocLeft]
         ]
 term = m_parens exprParser
@@ -70,6 +74,7 @@ parseExpr (Con a) list = a
 parseExpr (Uno Not a) list = not (parseExpr a list)
 parseExpr (Duo And a b) list = (parseExpr a list) && (parseExpr b list)
 parseExpr (Duo Or a b) list = (parseExpr a list) || (parseExpr b list)
+parseExpr (Duo Xor a b) list = (parseExpr a list) `xor` (parseExpr b list)
 
 {- extracts variable names from an expression -}
 getVars :: Expr -> Map String Bool
