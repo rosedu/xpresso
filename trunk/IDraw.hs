@@ -1,4 +1,7 @@
-module IDraw where
+module IDraw
+    (
+    makeSVGFile
+    )where
 
 import Data.List (
     (\\)
