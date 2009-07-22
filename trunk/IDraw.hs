@@ -1,5 +1,4 @@
 module IDraw where
-{--}
 
 import Data.List (
     (\\)
@@ -58,8 +57,8 @@ data WireMap = WireMap {
     portEnd :: String
     } deriving (Eq, Show)
 
-globalDELTAMIN = 10
-globalLEVELWIREDELTA = 10
+globalDELTAMIN = 2
+globalLEVELWIREDELTA = 2
 
 {-tobedeleted-}
 nodes = [Component "AND" ["i", "w"] ["x"], 
@@ -71,10 +70,10 @@ edges = [(Component "AND" ["i", "w"] ["x"], Component "ID" ["x"] ["xx"]),
       (Component "BQ" ["xx", "c"] ["w", "Q'"], Component "AND" ["i", "w"] ["x"]),
       (Component "ID" ["t"] ["c"], Component "BQ" ["xx", "c"] ["w", "Q'"])]
 parsedSVGComponents = [
-    SVGComponent "AND" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "B", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet" 6 4,
-    SVGComponent "ID" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet" 8 6,
-    SVGComponent "BQ" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "D", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "T", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "Q", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "Q'"] "nodefyet" 8 10,
-    SVGComponent "MUX" [SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "A", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "B", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "C", SVGPort (SVGPoint 2 1) (SVGPoint 2 1) "X"] "nodefyet" 8 10]
+    SVGComponent "AND" [SVGPort (SVGPoint 2 1) (SVGPoint 0 1) "A", SVGPort (SVGPoint 2 3) (SVGPoint 0 3) "B", SVGPort (SVGPoint 4 2) (SVGPoint 6 2) "X"] "nodefyet" 6 4,
+    SVGComponent "ID" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 6 4) (SVGPoint 8 4) "X"] "nodefyet" 8 6,
+    SVGComponent "BQ" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "D", SVGPort (SVGPoint 2 8) (SVGPoint 0 8) "T", SVGPort (SVGPoint 6 2) (SVGPoint 8 2) "Q", SVGPort (SVGPoint 6 8) (SVGPoint 8 8) "Q'"] "nodefyet" 8 10,
+    SVGComponent "MUX" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 2 6) (SVGPoint 0 6) "B", SVGPort (SVGPoint 2 8) (SVGPoint 0 8) "C", SVGPort (SVGPoint 6 6) (SVGPoint 8 6) "X"] "nodefyet" 8 10]
 {-untilhere-}
 
 striplevel :: [Component] -> [Component]
@@ -92,10 +91,10 @@ getLevels n = [head n] : (reverse . zipWith (\\) l $ tail l)
     where
 	l = takeWhile (/= []) $ iterate striplevel n
 
-getGlobalFanInofLevel :: [Component] -> Int
-getGlobalFanInofLevel c = foldl (+) 0 $ map length $ map cInputs c
+getGlobalFanInofLevel :: [(Component, SVGComponent)] -> Int
+getGlobalFanInofLevel c = (foldl (+) 0) . (map length) . (map (cInputs.fst)) $ c
 
-getGatesInaLevel :: [Component] -> Int
+getGatesInaLevel :: [(Component, SVGComponent)] -> Int
 getGatesInaLevel c = length c
 
 getUsedSVGComponents :: [Component] -> [SVGComponent] -> 
@@ -136,25 +135,41 @@ getGateOutputWireMapping :: Component -> SVGComponent -> [(String, String)]
 getGateOutputWireMapping c svg = reverse $ zip (reverse $ cOutputs c)
     (reverse $ map svgLabel $ svgcPorts svg)
 
-placeComponents :: [[(Component, SVGComponent)]] ->([SVGPComponent], [WireMap])
+placeComponents :: [[(Component, SVGComponent)]] -> ([SVGPComponent], [WireMap])
 placeComponents lpairs = (components, wires)
     where
 	components = foldl (++) [] $ unfoldr placeLevels (0, lpairs)
 	p x = True
 	wires = []
 
-placeLevels :: (Integer, [[(Component, SVGComponent)]]) -> 
-    Maybe ([SVGPComponent], (Integer, [[(Component, SVGComponent)]]))
+placeLevels :: (Int, [[(Component, SVGComponent)]]) -> 
+    Maybe ([SVGPComponent], (Int, [[(Component, SVGComponent)]]))
 placeLevels (_, []) = Nothing
 placeLevels (x, lvl:lvls) = Just (components, (y, lvls))
     where
-	(y, components) = placeLevel y lvl
+	(y, components) = placeLevel x lvl
 
-placeLevel :: Integer->[(Component, SVGComponent)]-> (Integer, [SVGPComponent])
-placeLevel x y = undefined
+placeLevel :: Int -> [(Component, SVGComponent)] -> (Int, [SVGPComponent])
+placeLevel x lvl = (y, comps)
+    where
+	fanin = getGlobalFanInofLevel lvl
+	maxw = maximum $ map (svgcW.snd) lvl
+	cx = x + fanin * globalLEVELWIREDELTA + globalDELTAMIN
+	y = maxw + cx + globalDELTAMIN
+	ycorners = scanl scanning 0 $ map (svgcH.snd) lvl
+	scanning z x = z + x + globalDELTAMIN
+	comps = map f $ zip (map snd lvl) ycorners
+	f (svgc, y) = SVGPComponent nsvgc (SVGPoint cx y)
+	    where
+		nsvgc = svgc { svgcPorts = map g $ svgcPorts svgc }
+	        g port = port { 
+		    svgStart = SVGPoint (cx + (svgX . svgStart $ port))
+					(y + (svgY . svgStart $ port)),
+		    svgStop = SVGPoint (cx + (svgX . svgStop $ port)) 
+					(y + (svgY . svgStop $ port))}
 
 {--
-placeComponentsInLevel :: Integer -> [(Component, SVGComponent)] -> 
+placeComponentsInLevel :: Int -> [(Component, SVGComponent)] -> 
     ([SVGPComponent], [WireMap])
 placeComponentsInLevel x pairs = error . show $ (input, output)
     where
@@ -166,3 +181,10 @@ placeComponentsInLevel x pairs = error . show $ (input, output)
 --to be deleted
 levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 --until here}
+
+makeSVGFile :: [Component] -> [SVGPComponent] -> IO()
+makeSVGFile nodes parsed = do
+	let levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
+	let (components, wires) = placeComponents levels
+	-- aici scrierea SVG --
+	return ()
