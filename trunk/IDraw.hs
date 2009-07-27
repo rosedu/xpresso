@@ -10,8 +10,7 @@ import Data.List (
     , findIndex
     , unfoldr
     )
-import Defs (Component, SVGComponent, SVGPComponent, SVGPath, SVGPort,
-		SVGPoint)
+import Defs 
 
 {-tobedeleted-}
 nodes = [Component "AND" ["i", "w"] ["x"], 

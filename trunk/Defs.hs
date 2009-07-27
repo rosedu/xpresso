@@ -74,7 +74,9 @@ defstags :: (String, String)
 defstags = ("<defs>","</defs>")
 
 {- Global variables for circuit representation -}
+globalDELTAMIN :: Int
 globalDELTAMIN = 2
+globalLEVELWIREDELTA :: Int
 globalLEVELWIREDELTA = 2
 
 

@@ -1,7 +1,7 @@
 module Structural where 
 
 -- Imports
-import Defs (Component)
+import Defs 
 import Data.List
 
 -- Type declarations

@@ -1,14 +1,15 @@
 module Main where
 
-import Graphics.UI.Gtk
+import Graphics.UI.Gtk hiding (Nand,Nor)
 
 import System.IO.Unsafe
 
-import Parser
+import ExprParser
 import IDraw
 import Gates
 import Structural
 import XMLParser
+import Defs
 
 main = do
     initGUI
@@ -87,8 +88,8 @@ getOptions :: [RadioButton] -> Options
 getOptions [as_is, and_or, nand, nor] 
     | getActive as_is = Options {circType=AsIs}
     | getActive and_or = Options {circType=AndOr,pAnd=2,pOr=2}
-    | getActive nand = Options {circType=Gates.Nand,pNand=2}
-    | getActive nor = Options {circType=Gates.Nor,pNor=2}
+    | getActive nand = Options {circType=Nand,pNand=2}
+    | getActive nor = Options {circType=Nor,pNor=2}
     where
     	getActive button = unsafePerformIO $ toggleButtonGetActive button
 

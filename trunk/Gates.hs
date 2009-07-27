@@ -2,7 +2,7 @@ module Gates where
 
 import ExprParser
 import Quine
-import Defs (Options, Component)
+import Defs 
 
 import Data.List
 import Data.Maybe
