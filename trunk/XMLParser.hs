@@ -68,4 +68,14 @@ getGateComp xml = (svgc, c)
 	{- SVG code -}
 	svgElem = (\(CElem x)->x) $ head $ tag "gate" /> tag "svg" $ CElem root
 	getSvgFile (Elem  _ [(_,AttValue [Left path])] _) = unsafeReadFile path
-	svgFile = getSvgFile svgElem
+	svgFile = head $ splitByString (snd defstags) [] $ head $ tail 
+		$ splitByString (fst defstags) [] $ getSvgFile svgElem
+
+	splitByString sep temp [] = temp
+	splitByString sep temp str = if isPrefixOf sep str then 
+		splitByString sep (temp++[[]]) (drop (length sep) str) 
+		else splitByString sep 
+			(if temp == [] then [[head str]] else
+			(init temp ++ [last temp ++ [head str]]))
+			(tail str) 
+		

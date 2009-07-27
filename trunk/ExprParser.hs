@@ -20,7 +20,6 @@ data Unop = Not deriving Show
 data Duop = And | Or | Xor deriving Show
 type TruthTable = [([Bool], Bool)]
 
-
 xor :: Bool -> Bool -> Bool
 xor a b = if a==b then False else True
 
@@ -34,7 +33,7 @@ def = emptyDef{ identStart = letter
               }
 
 {- mini-parseruti -}
-TokenParser{ parens = m_parens
+TokenParser { parens = m_parens
            , identifier = m_identifier
            , reservedOp = m_reservedOp
            , reserved = m_reserved

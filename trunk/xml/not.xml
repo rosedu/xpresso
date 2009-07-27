@@ -3,7 +3,7 @@
 <!-- Xpresso definition for NOT combinational gate -->
 <gate type="not" width="100" height="50">
 	<inputs>
-		<port name="in" x1="29" y1="25" x2="5.1" y2="25" />
+		<port name="in" x1="29" y1="25" x2="5" y2="25" />
 	</inputs>
 	
 	<outputs>

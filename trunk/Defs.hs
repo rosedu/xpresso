@@ -78,5 +78,3 @@ globalDELTAMIN :: Int
 globalDELTAMIN = 2
 globalLEVELWIREDELTA :: Int
 globalLEVELWIREDELTA = 2
-
-

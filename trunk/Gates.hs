@@ -11,7 +11,7 @@ import Data.Map (keys)
 {- Given a logical expression and some minimization restrictions, returns
 	a list of components that implement the minimized expression -}
 getGatesFromExpr :: String -> Options -> [Component]
-getGatesFromExpr str opts = case circType opts of
+getGatesFromExpr str opts = countInputs $ case circType opts of
 		AsIs  -> getGatesAsIs $ fromJust $ play str
 		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
@@ -28,7 +28,7 @@ getGatesFromExpr str opts = case circType opts of
 	table = makeTableFromExpr $ fromJust $ play str
 
 getGatesFromTable :: [String] -> TruthTable -> Options -> [Component]
-getGatesFromTable vars table opts = case circType opts of
+getGatesFromTable vars table opts = countInputs $ case circType opts of
 		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
 			$ getMinImps $ table
@@ -41,7 +41,7 @@ getGatesFromTable vars table opts = case circType opts of
    	inf  = floor (1/0) 
 
 {- Given a list of variable names and a list of implicants, returns the
-	AndOr circuit implementation (an OR mothergate and AND childgates) -}
+	AndOr circuit implementation (an or mothergate and and childgates) -}
 getOrGate :: Options -> [String] -> [Implicant] -> [Component]
 getOrGate opts vars imps = (concat notGates) ++ (concat lastGates) ++ orGate
     where
@@ -53,18 +53,18 @@ getOrGate opts vars imps = (concat notGates) ++ (concat lastGates) ++ orGate
 	singleImp imp = length (filter (== Care True) imp) == 1 &&
 			length (filter (== Care False) imp) == 0
 	orGate = if (length imps <= 1) then [] else splitGate (pOr opts) 
-	    	(Component "OR" ((map (head.cOutputs.last) lastGates) ++ singleImps) 
+	    	(Component "or" ((map (head.cOutputs.last) lastGates) ++ singleImps) 
 		[name])
 	name = tail $ concat $ map (\x -> "+"++show x) imps
 
 {- Given a list of variable names and an implicant, returns the corresponding
-	AND gate and any NOT gates that are needed -}
+	and gate and any NOT gates that are needed -}
 getAndGate :: [String] -> Implicant ->  [Component]
 getAndGate vars imp = notGates ++ andGate
     where
     	notGates = map fromJust $ filter isJust $ map getNotGate varPairs 
 	andGate = if (length (filter (/= Dash) imp) <= 1 ) then [] else
-	    [Component "AND" (filter (/= []) (map getName varPairs)) [name]]
+	    [Component "and" (filter (/= []) (map getName varPairs)) [name]]
 	name = concat (map show imp)
 	varPairs = zip imp vars
 	getName (token, var) 
@@ -73,15 +73,15 @@ getAndGate vars imp = notGates ++ andGate
 	    | token == Care False = var++"'"
 
 {- Implements the circuit given by the list of implicants using 
-	NOR and NOT gates -}
+	Nor and NOT gates -}
 getNorGate :: Options -> [String] -> [Implicant] -> [Component]
 getNorGate opts vars imps = map transform motherGate
     where
-    	transform gate = if (cType gate /= "NAND") then gate else
-		Component "NOR" (cInputs gate) (cOutputs gate) 
+    	transform gate = if (cType gate /= "nand") then gate else
+		Component "nor" (cInputs gate) (cOutputs gate) 
     	motherGate = if notNegated == [] then [] else
-		if (cType.head) notNegated == "NAND" then 
-		(Component "NOT" [(head.cOutputs.head) notNegated] [name])
+		if (cType.head) notNegated == "nand" then 
+		(Component "not" [(head.cOutputs.head) notNegated] [name])
 			:notNegated
 		else notNegated
 	name = "(" ++ ((head.cOutputs.head) notNegated) ++ ")'"
@@ -96,16 +96,16 @@ getNorGate opts vars imps = map transform motherGate
 		:(negateImp lx)
 
 {- Implements the circuit given by the list of implicants using
-	NAND and NOT gates -}
+	Nand and NOT gates -}
 getNandGate :: Options -> [String] -> [Implicant] -> [Component]
 getNandGate opts vars imps = if length childNands == 1 then 
 	if (length.filter (/=Dash).head) imps == 1 then 
 	getAndGate vars (head imps)
 	else
-   	Component  "NOT" (map (head.cOutputs) lastGates) ["("++name++")'"] 
+   	Component  "not" (map (head.cOutputs) lastGates) ["("++name++")'"] 
 		: (concat childNands)
 	else
- 	Component "NAND" (map (head.cOutputs) lastGates ++ singleImps) 
+ 	Component "nand" (map (head.cOutputs) lastGates ++ singleImps) 
 		["("++name++")'"] : (concat childNands)
     where
     	childNands = map (getChildNand vars) imps
@@ -116,13 +116,13 @@ getNandGate opts vars imps = if length childNands == 1 then
 	name = tail $ concat $ map (\x -> "+"++show x) imps
 	lastGates = map last (filter (/=[]) childNands)
 
-{- Returns the NAND gate implementation of a single implicant, to be used
+{- Returns the Nand gate implementation of a single implicant, to be used
 	by the getNandGate function -}
 getChildNand :: [String] -> Implicant -> [Component]
 getChildNand vars imp = if (length (filter (/=Dash) imp) <= 1 ) then singleNot
 		else notGates ++ nandGate
     where
-	nandGate = [Component "NAND" (filter ( /= []) (map getName varPairs)) 
+	nandGate = [Component "nand" (filter ( /= []) (map getName varPairs)) 
 		[varName]]
    	notGates = map fromJust $ filter isJust $ map getNotGate varPairs 
 	singleNot = if fst singleImp == Care True then 
@@ -138,7 +138,7 @@ getChildNand vars imp = if (length (filter (/=Dash) imp) <= 1 ) then singleNot
 {- if the QuineToken given is negated, it returns a corresponding NOT gate -}
 getNotGate :: (QuineToken, String) -> Maybe Component
 getNotGate (token, var) = if token == Care False then 
-	Just (Component "NOT" [var] [var++"'"])	else Nothing
+	Just (Component "not" [var] [var++"'"])	else Nothing
 
 {- given a logical gate that implements an associative function, it returns 
 	an implementation of the function using gates of the same type but with 
@@ -194,12 +194,12 @@ getVerilog compList = concat $ map compString compList
 
 {- returns a list of components that implement a non-minimized expression -}
 getGatesAsIs :: Expr -> [Component]
-getGatesAsIs (Uno Not a) = Component "NOT" [name] [getName a ++ "'"] : child
+getGatesAsIs (Uno Not a) = Component "not" [name] [getName a ++ "'"] : child
     where 
     	child = getGatesAsIs a
 	name = if child == [] then getName a else (head.cOutputs.head) child
 
-getGatesAsIs (Duo op a b) = reverse $ mergeGates $ Component opName 
+getGatesAsIs (Duo op a b) = countInputs $ reverse $ mergeGates $ Component opName 
 	[name_a, name_b] [getName (Duo op a b)]:(child_a ++ child_b)
     where 
     	child_a = getGatesAsIs a
@@ -209,9 +209,9 @@ getGatesAsIs (Duo op a b) = reverse $ mergeGates $ Component opName
 	name_b = if child_b == [] then getName b
 		else (head.cOutputs.head) child_b
 	opName = case op of
-		And -> "AND"
-		Or -> "OR"
-		Xor -> "XOR"
+		And -> "and"
+		Or -> "or"
+		Xor -> "xor"
 getGatesAsIs _ = []
 
 mergeGates :: [Component] -> [Component]
@@ -237,7 +237,15 @@ mergeGatesAux (x:rest) result = if null matches
 getName :: Expr -> String
 getName (Var a) = a
 getName (Uno Not a) = getName a ++ "'"
-getName (Duo And a b) = getName a ++ "_AND_" ++ (getName b)
-getName (Duo Or a b) = getName a ++ "_OR_" ++ (getName b)
-getName (Duo Xor a b) = getName a ++ "_XOR_" ++ (getName b)
+getName (Duo And a b) = getName a ++ "_and_" ++ (getName b)
+getName (Duo Or a b) = getName a ++ "_or_" ++ (getName b)
+getName (Duo Xor a b) = getName a ++ "_xor_" ++ (getName b)
 getName x = show x
+
+countInputs :: [Component] -> [Component]
+countInputs list = map count list
+    where count (Component ctype cins couts)
+		| elem ctype ["or","and","nor","nand","xor","xnor"] = 
+			Component newType cins couts
+    		| otherwise = Component ctype cins couts
+	    	where newType = ctype ++ (show $ length cins)

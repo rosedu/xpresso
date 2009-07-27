@@ -11,6 +11,8 @@ import Structural
 import XMLParser
 import Defs
 
+import Debug.Trace
+
 main = do
     initGUI
     window <- windowNew
@@ -51,7 +53,8 @@ main = do
 
     button `onPressed` do 
     	expr <- get input textBufferText
-    	eval expr inputButtons circButtons output
+	fname <- get output textBufferText
+    	eval expr fname inputButtons circButtons output
 
     widgetShowAll window
 
@@ -67,10 +70,10 @@ radioButtons (b1:b2:rest) = do
     b <- radioButtonNewWithLabelFromWidget (head b_list) b1
     return (b:b_list)
 
-eval :: String -> [RadioButton] -> [RadioButton] -> TextBuffer -> IO ()
-eval text [exp, tt1, tt2, pv] circButtons output
+eval :: String -> FilePath -> [RadioButton] -> [RadioButton] -> TextBuffer -> IO ()
+eval text fileName [exp, tt1, tt2, pv] circButtons output
     | getActive exp = 
-    	textBufferSetText output $ show $ getGatesFromExpr text opts
+    	makeSVGFile gates svgc fileName
     | getActive tt1 = 
     	textBufferSetText output $ show $ getGatesFromTable vars1 table1 opts
     | getActive tt2 = 
@@ -79,6 +82,8 @@ eval text [exp, tt1, tt2, pv] circButtons output
     	textBufferSetText output $ show $ getComponentList 
 				(getStatmnts (lines text)) getComponents
      where
+        svgc = getSVGComponents
+      	gates = getGatesFromExpr text opts
 	(vars1,table1) = parseTT1 text 
 	(vars2,table2) = parseTT2 text 
     	getActive button = unsafePerformIO $ toggleButtonGetActive button
@@ -86,10 +91,10 @@ eval text [exp, tt1, tt2, pv] circButtons output
 
 getOptions :: [RadioButton] -> Options
 getOptions [as_is, and_or, nand, nor] 
-    | getActive as_is = Options {circType=AsIs}
-    | getActive and_or = Options {circType=AndOr,pAnd=2,pOr=2}
-    | getActive nand = Options {circType=Nand,pNand=2}
-    | getActive nor = Options {circType=Nor,pNor=2}
+    | getActive as_is = Options {circType=AsIs,pAnd=2,pOr=2,pNand=2,pNor=2}
+    | getActive and_or = Options {circType=AndOr,pAnd=2,pOr=2,pNand=2,pNor=2}
+    | getActive nand = Options {circType=Nand,pAnd=2,pOr=2,pNand=2,pNor=2}
+    | getActive nor = Options {circType=Nor,pAnd=2,pOr=2,pNand=2,pNor=2}
     where
     	getActive button = unsafePerformIO $ toggleButtonGetActive button
 

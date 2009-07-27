@@ -1,4 +1,4 @@
-mockface: Mockface.hs Gates.hs
+mockface: Mockface.hs Gates.hs IDraw.hs
 	ghc --make Mockface.hs -o mockface
 
 clean:

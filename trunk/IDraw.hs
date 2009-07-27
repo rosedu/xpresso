@@ -1,6 +1,8 @@
 module IDraw
     (
-    makeSVGFile
+    makeSVGFile,
+    makeSVGString2,
+    placeComponents
     )where
 
 import Data.List (
@@ -12,8 +14,9 @@ import Data.List (
     )
 import Defs 
 import SVGCircuit
+import Debug.Trace
 
-{-tobedeleted-}
+{-tobedeleted
 nodes = [Component "AND" ["i", "w"] ["x"], 
       Component "BQ" ["xx", "c"] ["w", "Q'"],
       Component "ID" ["x"] ["xx"],
@@ -23,12 +26,12 @@ parsedSVGComponents = [
     SVGComponent "ID" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 6 4) (SVGPoint 8 4) "X"] "nodefyet" 8 6,
     SVGComponent "BQ" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "D", SVGPort (SVGPoint 2 8) (SVGPoint 0 8) "T", SVGPort (SVGPoint 6 2) (SVGPoint 8 2) "Q", SVGPort (SVGPoint 6 8) (SVGPoint 8 8) "Q'"] "nodefyet" 8 10,
     SVGComponent "MUX" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 2 6) (SVGPoint 0 6) "B", SVGPort (SVGPoint 2 8) (SVGPoint 0 8) "C", SVGPort (SVGPoint 6 6) (SVGPoint 8 6) "X"] "nodefyet" 8 10]
-{-untilhere-}
+untilhere-}
 
 striplevel :: [Component] -> [Component]
 striplevel schema  = schema \\ last
     where
-	last = filter f nodes
+	last = filter f schema
 	f x = [] /= schemaoutputs `intersect` cOutputs x
 	schemaoutputs = gateoutputs \\ gateinputs
 	gateoutputs = foldl (++) [] $ map cOutputs schema
@@ -49,10 +52,11 @@ getGatesInaLevel c = length c
 getUsedSVGComponents :: [Component] -> [SVGComponent] -> 
     [(Component, SVGComponent)]
 getUsedSVGComponents [] svg = []
-getUsedSVGComponents (c:cs) svg = l : (getUsedSVGComponents cs svg)
+getUsedSVGComponents (c:cs) svg = trace ("\n\n"++show c++"\n\n") $ l : (getUsedSVGComponents cs svg)
     where
-	l = (c, head $ filter f svg)
+	l = (c, head' $ filter f svg)
 	f x = svgcType x == cType c
+	head' list = trace (show list ++ "fuck you") $ head list
 
 getUsedSVGComponentsSorted :: [Component] -> [SVGComponent] ->
     [(Component, SVGComponent)]
@@ -128,11 +132,17 @@ placeComponentsInLevel x pairs = error . show $ (input, output)
 	f' x = getGateOutputWireMapping (fst x) (snd x)--}
 
 --to be deleted
-levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
+--- levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 --until here}
 
 makeSVGFile :: [Component] -> [SVGComponent] -> FilePath -> IO()
 makeSVGFile nodes parsed fpath = do
-	let levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
+	let levels = getLevelsOfUsedSVGComponents nodes parsed
 	let (components, wires) = placeComponents levels
 	writeFile fpath $ makeSVGString $ makeSVGTags parsed components wires
+
+makeSVGString2 :: [Component] -> [SVGComponent] -> String
+makeSVGString2 nodes parsed =  makeSVGString $ makeSVGTags parsed components wires
+    where
+	levels = getLevelsOfUsedSVGComponents nodes parsed
+	(components, wires) = placeComponents levels
