@@ -1,8 +1,8 @@
-module SvgCircuit where
+module SVGCircuit (makeSVGString, makeSVGTags) where
 
 -- imports, some might be temporary
 import System.IO
-import Defs (SVGComponent, SVGPComponent, SVGPath, SVGPort, SVGPoint)
+import Defs 
 
 {- Returns a list of definitions in XML String format -}
 defs :: [SVGComponent] -> [String]

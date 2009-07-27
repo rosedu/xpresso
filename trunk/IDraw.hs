@@ -11,6 +11,7 @@ import Data.List (
     , unfoldr
     )
 import Defs 
+import SVGCircuit
 
 {-tobedeleted-}
 nodes = [Component "AND" ["i", "w"] ["x"], 
@@ -130,9 +131,8 @@ placeComponentsInLevel x pairs = error . show $ (input, output)
 levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 --until here}
 
-makeSVGFile :: [Component] -> [SVGComponent] -> IO()
-makeSVGFile nodes parsed = do
+makeSVGFile :: [Component] -> [SVGComponent] -> FilePath -> IO()
+makeSVGFile nodes parsed fpath = do
 	let levels = getLevelsOfUsedSVGComponents nodes parsedSVGComponents
 	let (components, wires) = placeComponents levels
-	-- aici scrierea SVG --
-	return ()
+	writeFile fpath $ makeSVGString $ makeSVGTags parsed components wires
