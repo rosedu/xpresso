@@ -199,7 +199,7 @@ getGatesAsIs (Uno Not a) = Component "NOT" [name] [getName a ++ "'"] : child
     	child = getGatesAsIs a
 	name = if child == [] then getName a else (head.cOutputs.head) child
 
-getGatesAsIs (Duo op a b) = Component opName 
+getGatesAsIs (Duo op a b) = reverse $ mergeGates $ Component opName 
 	[name_a, name_b] [getName (Duo op a b)]:(child_a ++ child_b)
     where 
     	child_a = getGatesAsIs a
@@ -214,6 +214,25 @@ getGatesAsIs (Duo op a b) = Component opName
 		Xor -> "XOR"
 getGatesAsIs _ = []
 
+mergeGates :: [Component] -> [Component]
+mergeGates list = nextStep --if (union list nextStep == list) 
+	--then nextStep else mergeGates nextStep
+    where nextStep = mergeGatesAux list []  
+
+mergeGatesAux :: [Component] -> [Component] -> [Component]
+mergeGatesAux [] result = result
+mergeGatesAux (x:rest) result = if null matches 
+	then mergeGatesAux rest (x:result)
+	else mergeGates $ result ++ (rest \\ [head matches]) 
+		++ [mergeGate x (head matches)]
+    where
+	matches = filter (isMergeable x) rest
+	isMergeable (Component t1 i1 o1) (Component t2 i2 o2) =
+		(elem (head o1) i2 || elem (head o2) i1) && t1 == t2
+	mergeGate (Component t1 i1 o1) (Component t2 i2 o2)
+		| elem (head o2) i1 = Component t2 (union i1 i2 \\ [head o2]) o1
+		| elem (head o1) i2 = Component t1 (union i1 i2 \\ [head o1]) o2
+	
 {- returns a string representation of an expression -}
 getName :: Expr -> String
 getName (Var a) = a
@@ -222,5 +241,3 @@ getName (Duo And a b) = getName a ++ "_AND_" ++ (getName b)
 getName (Duo Or a b) = getName a ++ "_OR_" ++ (getName b)
 getName (Duo Xor a b) = getName a ++ "_XOR_" ++ (getName b)
 getName x = show x
-    	  
-
