@@ -1,7 +1,7 @@
 module Structural where 
 
 -- Imports
-import IDraw
+import Defs (Component)
 import Data.List
 
 -- Type declarations

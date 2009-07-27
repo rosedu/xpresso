@@ -2,7 +2,7 @@
 
 {- i can has parser? -}
 
-module Parser where
+module ExprParser where
 
 import Data.Map
 import Control.Monad(liftM)
@@ -11,15 +11,15 @@ import Text.ParserCombinators.Parsec.Expr
 import Text.ParserCombinators.Parsec.Token
 import Text.ParserCombinators.Parsec.Language
 
-{- tipul expresie -}
+{- "Expression" type -}
 data Expr = Var String | Con Bool | Uno Unop Expr | Duo Duop Expr Expr
     deriving Show
-{- tipul operator unar -}
+{- Unary operator type -}
 data Unop = Not deriving Show
-{- tipul operator dual -}
+{- Dual operator type -}
 data Duop = And | Or | Xor deriving Show
-
 type TruthTable = [([Bool], Bool)]
+
 
 xor :: Bool -> Bool -> Bool
 xor a b = if a==b then False else True

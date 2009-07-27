@@ -1,22 +1,12 @@
 module Gates where
 
-import Parser
+import ExprParser
 import Quine
-import IDraw
+import Defs (Options, Component)
 
 import Data.List
 import Data.Maybe
 import Data.Map (keys)
-
-{- These options help specify restrictions to the minimization method -}
-data Options = Options {
-    circType :: CircuitType,
-    pAnd     :: Int,
-    pOr      :: Int,
-    pNand    :: Int,
-    pNor     :: Int
-}
-data CircuitType = AsIs | AndOr | Nand | Nor
 
 {- Given a logical expression and some minimization restrictions, returns
 	a list of components that implement the minimized expression -}

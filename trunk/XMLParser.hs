@@ -3,7 +3,8 @@ module XMLParser where
 import Text.XML.HaXml
 import Text.XML.HaXml.Parse
 
-import IDraw
+-- what from Defs?
+import Defs (Component, SVGComponent, SVGPort, SVGPoint)
 import System.IO.Unsafe
 import System.Directory
 import Data.List

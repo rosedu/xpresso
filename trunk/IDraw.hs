@@ -10,51 +10,8 @@ import Data.List (
     , findIndex
     , unfoldr
     )
-
-{-Structural and combinational component-}
-data Component = Component {
-    cType :: String,
-    cInputs :: [String],
-    cOutputs :: [String]
-    } deriving (Eq, Show)
-
-{- Resulting SVG point -}
-data SVGPoint = SVGPoint {
-    svgX :: Int,
-    svgY :: Int
-    } deriving (Eq, Show)
-
-{- Resulting SVG component port -}
-data SVGPort = SVGPort {
-    svgStart :: SVGPoint,
-    svgStop :: SVGPoint,
-    svgLabel :: String
-    } deriving (Eq, Show)
-
-{- Resulting SVG component:
- - svgcDefs === the SVG description of the component
- --}
-data SVGComponent = SVGComponent {
-    svgcType :: String,
-    svgcPorts :: [SVGPort],
-    svgcDefs :: String,
-    svgcW :: Int,
-    svgcH :: Int
-    } deriving (Eq, Show)
-
-{- Resulting SVG path between two omponents -}
-data SVGPath = SVGPath {
-    svgcControls :: [SVGPoint]
-    } deriving (Eq, Show)
-
-{- Localized instance of a SVGComponent -}
-data SVGPComponent = SVGPComponent {
-    svgpInstance :: SVGComponent,
-    svgCorner :: SVGPoint
-    } deriving (Eq, Show)
-
-globalDELTAMIN = 2
-globalLEVELWIREDELTA = 2
+import Defs (Component, SVGComponent, SVGPComponent, SVGPath, SVGPort,
+		SVGPoint)
 
 {-tobedeleted-}
 nodes = [Component "AND" ["i", "w"] ["x"], 

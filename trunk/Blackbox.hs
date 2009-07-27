@@ -4,32 +4,15 @@ module Blackbox where
 
 -- imports
 import System.IO
-
--- XML header
-xmlhead :: String
-xmlhead = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
-
--- SVG header
-svghead :: String
-svghead = "<svg width=\"100%\" height=\"100%\" version=\"1.1\"\n \
-			\xmlns=\"http://www.w3.org/2000/svg\" \n \
-			\xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n"
-
--- SVG tags
-svgtags :: (String, String)
-svgtags = (svghead,"</svg>")
-
--- Opening and closing tags for <defs>
-defstags :: (String, String)
-defstags = ("<defs>","</defs>")
+import Defs (xmlhead, svghead, svgtags, defstags)
 
 {- Constants - preprocessed, though they could possibly be computed
 	by some functions -}
--- Line width
+-- Line width; TODO: move to config file
 linewidth :: Int
 linewidth = 30
 
--- Box width
+-- Box width; TODO: move to config file
 boxwidth :: Int
 boxwidth = 60
 

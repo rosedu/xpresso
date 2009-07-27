@@ -4,7 +4,6 @@ module Quine where
 -- Dunno if we need this.
 import Data.List
 import Data.Maybe
-import Parser 
 
 {- QuineToken = True, False or Dash -}
 data QuineToken = Care Bool | Dash deriving Eq
