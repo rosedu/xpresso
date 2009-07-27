@@ -16,7 +16,11 @@ import Defs
 import SVGCircuit
 import Debug.Trace
 
-{-tobedeleted
+{- test me:
+[Component {cType = "or2", cInputs = ["a","b_and_c"], cOutputs = ["a_or_b_and_c"]},Component {cType = "and2", cInputs = ["b","c"], cOutputs = ["b_and_c"]}]
+-}
+
+{-tobedeleted-}
 nodes = [Component "AND" ["i", "w"] ["x"], 
       Component "BQ" ["xx", "c"] ["w", "Q'"],
       Component "ID" ["x"] ["xx"],
@@ -26,7 +30,7 @@ parsedSVGComponents = [
     SVGComponent "ID" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 6 4) (SVGPoint 8 4) "X"] "nodefyet" 8 6,
     SVGComponent "BQ" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "D", SVGPort (SVGPoint 2 8) (SVGPoint 0 8) "T", SVGPort (SVGPoint 6 2) (SVGPoint 8 2) "Q", SVGPort (SVGPoint 6 8) (SVGPoint 8 8) "Q'"] "nodefyet" 8 10,
     SVGComponent "MUX" [SVGPort (SVGPoint 2 2) (SVGPoint 0 2) "A", SVGPort (SVGPoint 2 6) (SVGPoint 0 6) "B", SVGPort (SVGPoint 2 8) (SVGPoint 0 8) "C", SVGPort (SVGPoint 6 6) (SVGPoint 8 6) "X"] "nodefyet" 8 10]
-untilhere-}
+{-untilhere-}
 
 striplevel :: [Component] -> [Component]
 striplevel schema  = schema \\ last
@@ -39,8 +43,9 @@ striplevel schema  = schema \\ last
 
 getLevels :: [Component] -> [[Component]]
 getLevels [] = []
-getLevels n = [head n] : (reverse . zipWith (\\) l $ tail l)
+getLevels n = (last l) : (reverse . zipWith (\\) l $ tail l)
     where
+    	ll = zipWith (\\) l $ tail l
 	l = takeWhile (/= []) $ iterate striplevel n
 
 getGlobalFanInofLevel :: [(Component, SVGComponent)] -> Int
@@ -56,7 +61,7 @@ getUsedSVGComponents (c:cs) svg = trace ("\n\n"++show c++"\n\n") $ l : (getUsedS
     where
 	l = (c, head' $ filter f svg)
 	f x = svgcType x == cType c
-	head' list = trace (show list ++ "fuck you") $ head list
+	head' list = trace (show list ++ "fuck you"++"\n\n") $ head list
 
 getUsedSVGComponentsSorted :: [Component] -> [SVGComponent] ->
     [(Component, SVGComponent)]

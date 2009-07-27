@@ -75,7 +75,7 @@ eval text fileName [exp, tt1, tt2, pv] circButtons output
     | getActive exp = 
     	makeSVGFile gates svgc fileName
     | getActive tt1 = 
-    	textBufferSetText output $ show $ getGatesFromTable vars1 table1 opts
+    	textBufferSetText output $ show $ getGatesFromExpr text opts
     | getActive tt2 = 
     	textBufferSetText output $ show $ getGatesFromTable vars2 table2 opts
     | getActive pv = 
@@ -91,8 +91,8 @@ eval text fileName [exp, tt1, tt2, pv] circButtons output
 
 getOptions :: [RadioButton] -> Options
 getOptions [as_is, and_or, nand, nor] 
-    | getActive as_is = Options {circType=AsIs,pAnd=2,pOr=2,pNand=2,pNor=2}
-    | getActive and_or = Options {circType=AndOr,pAnd=2,pOr=2,pNand=2,pNor=2}
+    | getActive as_is = Options {circType=AsIs,pAnd=3,pOr=3,pNand=2,pNor=2}
+    | getActive and_or = Options {circType=AndOr,pAnd=3,pOr=3,pNand=2,pNor=2}
     | getActive nand = Options {circType=Nand,pAnd=2,pOr=2,pNand=2,pNor=2}
     | getActive nor = Options {circType=Nor,pAnd=2,pOr=2,pNand=2,pNor=2}
     where

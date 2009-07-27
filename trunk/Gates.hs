@@ -12,7 +12,7 @@ import Data.Map (keys)
 	a list of components that implement the minimized expression -}
 getGatesFromExpr :: String -> Options -> [Component]
 getGatesFromExpr str opts = countInputs $ case circType opts of
-		AsIs  -> getGatesAsIs $ fromJust $ play str
+		AsIs  -> countInputs $ getGatesAsIs $ fromJust $ play str
 		AndOr -> prettyNames $ getOrGate opts vars $ 
 			(\x -> minAndOr  x (pAnd opts) (pNor opts)) 
 			$ getMinImps $ table
@@ -199,7 +199,7 @@ getGatesAsIs (Uno Not a) = Component "not" [name] [getName a ++ "'"] : child
     	child = getGatesAsIs a
 	name = if child == [] then getName a else (head.cOutputs.head) child
 
-getGatesAsIs (Duo op a b) = countInputs $ reverse $ mergeGates $ Component opName 
+getGatesAsIs (Duo op a b) = reverse $ mergeGates $ Component opName 
 	[name_a, name_b] [getName (Duo op a b)]:(child_a ++ child_b)
     where 
     	child_a = getGatesAsIs a
