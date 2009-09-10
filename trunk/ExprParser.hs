@@ -25,12 +25,12 @@ xor a b = if a==b then False else True
 
 {- specificatia sintaxei -}
 def = emptyDef{ identStart = letter
-              , identLetter = alphaNum
-              , opStart = oneOf "'+*~^"
-              , opLetter = oneOf "'+*~^"
-              , reservedOpNames = ["~", "+", "*", "'", "^"]
-	      , reservedNames = ["0", "1"]
-              }
+          , identLetter = alphaNum
+          , opStart = oneOf "'+*~^"
+          , opLetter = oneOf "'+*~^"
+          , reservedOpNames = ["~", "+", "*", "'", "^"]
+          , reservedNames = ["0", "1"]
+          }
 
 {- mini-parseruti -}
 TokenParser { parens = m_parens
@@ -58,13 +58,13 @@ term = m_parens exprParser
 insertSpaces :: String -> String
 insertSpaces [] = []
 insertSpaces (c:str) = if (elem c "'~") then c:' ':(insertSpaces str)
-			else c:insertSpaces str
+            else c:insertSpaces str
 
 {- string-to-expression function -}
 play :: String -> Maybe Expr 
 play inp = case parse exprParser "" (insertSpaces inp) of
-		Left err -> Nothing
-		Right expr -> Just expr
+        Left err -> Nothing
+        Right expr -> Just expr
 
 {- evaluates an expression for a var-value binding -}
 parseExpr :: Expr -> Map String Bool -> Bool
@@ -86,23 +86,23 @@ getVars (Duo _ a b) = union (getVars a) (getVars b)
 makeTableFromExpr :: Expr -> TruthTable
 makeTableFromExpr expr = makeTableFromExprAux expr n vars []
     where 
-	n	= size $ getVars expr
-	vars  	= fmap fst (toList (getVars expr))
+    n    = size $ getVars expr
+    vars      = fmap fst (toList (getVars expr))
 
 {- auxiliary function for makeTableFromExpr -}
 makeTableFromExprAux :: Expr -> Int -> [String] -> [Bool] -> TruthTable 
 makeTableFromExprAux expr n vars current = if (length current) < n then
     (makeTableFromExprAux expr n vars (False:current)) ++ 
-    	(makeTableFromExprAux expr n vars (True:current))
+        (makeTableFromExprAux expr n vars (True:current))
     else [(current, (parseExpr expr pairMap))]
     where 
-	pairMap	= fromList $ zip vars current
+    pairMap    = fromList $ zip vars current
 
 {- generates all possible truth-value combinations of a certain length -}
 fullTable :: Int -> [Bool] -> [[Bool]]
 fullTable n current = if (length current) < n then 
-	(fullTable n (False:current)) ++ (fullTable n (True:current))
-	else current:[]
+    (fullTable n (False:current)) ++ (fullTable n (True:current))
+    else current:[]
 
 {- transforms f given by {x | f(x) = True} into a TruthTable for f -}
 makeTableFromTable :: [[Bool]] -> TruthTable
@@ -112,25 +112,25 @@ makeTableFromTable tt = makeTableFromTableAux(fullTable (length(head tt)) []) tt
 makeTableFromTableAux :: [[Bool]] -> [[Bool]] -> TruthTable
 makeTableFromTableAux [] _ = []
 makeTableFromTableAux (x:full) tt = if (elem x tt) then 
-				(x, True) : (makeTableFromTableAux full tt)
-			else 
-				(x, False): (makeTableFromTableAux full tt)
+                (x, True) : (makeTableFromTableAux full tt)
+            else 
+                (x, False): (makeTableFromTableAux full tt)
 
 parseTT1 :: String -> ([String],TruthTable)
 parseTT1 raw = (vars, Prelude.map makeTuple table)
     where
-    	rows = lines raw
-	vars = words $ head rows
-	unparsed = Prelude.map words $ tail rows
-	table = Prelude.map getRow unparsed
-	getRow row = Prelude.map (\x -> if x=="0" then False else True) row
-	makeTuple list = (init list, last list)
+    rows = lines raw
+    vars = words $ head rows
+    unparsed = Prelude.map words $ tail rows
+    table = Prelude.map getRow unparsed
+    getRow row = Prelude.map (\x -> if x=="0" then False else True) row
+    makeTuple list = (init list, last list)
 
 parseTT2 :: String -> ([String],TruthTable)
 parseTT2 raw = (vars, table)
     where
-    	rows = lines raw
-	vars = words $ head rows
-	unparsed = Prelude.map words $ tail rows
-	table = makeTableFromTable $ Prelude.map getRow unparsed
-	getRow row = Prelude.map (\x -> if x=="0" then False else True) row
+    rows = lines raw
+    vars = words $ head rows
+    unparsed = Prelude.map words $ tail rows
+    table = makeTableFromTable $ Prelude.map getRow unparsed
+    getRow row = Prelude.map (\x -> if x=="0" then False else True) row

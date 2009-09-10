@@ -18,7 +18,7 @@ main = do
     window <- windowNew
     top <- hBoxNew True 10
     set window [windowDefaultWidth:=800, windowDefaultHeight:=400,
-    	containerChild := top, containerBorderWidth:=10]
+        containerChild := top, containerBorderWidth:=10]
 
     textBoxes <- vBoxNew True 10
     controls <- vBoxNew True 10
@@ -36,7 +36,7 @@ main = do
 
     inputType <- vBoxNew True 10
     inputButtons <- radioButtons ["Expression","Truth Table 1", 
-    	"Truth Table 2", "PseudoVerilog"]
+        "Truth Table 2", "PseudoVerilog"]
     mapM_ (\x->boxPackStart inputType x PackNatural 0) inputButtons
     boxPackStart controls inputType PackNatural 0
 
@@ -49,12 +49,12 @@ main = do
     boxPackStart controls circType PackNatural 0
 
     --(head inputButtons) `onToggled` do
-    --	textBufferSetText input "toggled"
+    --    textBufferSetText input "toggled"
 
     button `onPressed` do 
-    	expr <- get input textBufferText
-	fname <- get output textBufferText
-    	eval expr fname inputButtons circButtons output
+	    expr <- get input textBufferText
+	    fname <- get output textBufferText
+	    eval expr fname inputButtons circButtons output
 
     widgetShowAll window
 
@@ -73,21 +73,21 @@ radioButtons (b1:b2:rest) = do
 eval :: String -> FilePath -> [RadioButton] -> [RadioButton] -> TextBuffer -> IO ()
 eval text fileName [exp, tt1, tt2, pv] circButtons output
     | getActive exp = 
-    	makeSVGFile gates svgc fileName
+        makeSVGFile gates svgc fileName
     | getActive tt1 = 
-    	textBufferSetText output $ show $ getGatesFromExpr text opts
+        textBufferSetText output $ show $ getGatesFromExpr text opts
     | getActive tt2 = 
-    	textBufferSetText output $ show $ getGatesFromTable vars2 table2 opts
+        textBufferSetText output $ show $ getGatesFromTable vars2 table2 opts
     | getActive pv = 
-    	textBufferSetText output $ show $ getComponentList 
-				(getStatmnts (lines text)) getComponents
+        textBufferSetText output $ show $ getComponentList 
+                (getStatmnts (lines text)) getComponents
      where
-        svgc = getSVGComponents
-      	gates = getGatesFromExpr text opts
-	(vars1,table1) = parseTT1 text 
-	(vars2,table2) = parseTT2 text 
-    	getActive button = unsafePerformIO $ toggleButtonGetActive button
-	opts = getOptions circButtons
+    svgc = getSVGComponents
+    gates = getGatesFromExpr text opts
+    (vars1,table1) = parseTT1 text 
+    (vars2,table2) = parseTT2 text 
+    getActive button = unsafePerformIO $ toggleButtonGetActive button
+    opts = getOptions circButtons
 
 getOptions :: [RadioButton] -> Options
 getOptions [as_is, and_or, nand, nor] 
@@ -96,5 +96,5 @@ getOptions [as_is, and_or, nand, nor]
     | getActive nand = Options {circType=Nand,pAnd=2,pOr=2,pNand=2,pNor=2}
     | getActive nor = Options {circType=Nor,pAnd=2,pOr=2,pNand=2,pNor=2}
     where
-    	getActive button = unsafePerformIO $ toggleButtonGetActive button
+    getActive button = unsafePerformIO $ toggleButtonGetActive button
 

@@ -1,2 +1,4 @@
 libghc6-haxml-dev
 libghc6-gtk-dev
+libghc6-parsec-dev
+libghc6-cairo-dev (for XML insertion into UI)
